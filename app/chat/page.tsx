@@ -228,6 +228,363 @@ ${js}
   )
 }
 
+// Number Guessing Game
+const NumberGuessGame = ({ onClose }: { onClose: () => void }) => {
+  const [target, setTarget] = useState<number>(() => Math.floor(Math.random() * 100) + 1)
+  const [attempts, setAttempts] = useState(0)
+  const [input, setInput] = useState('')
+  const [message, setMessage] = useState('Guess a number between 1 and 100')
+  const [won, setWon] = useState(false)
+
+  const newGame = () => {
+    setTarget(Math.floor(Math.random() * 100) + 1)
+    setAttempts(0)
+    setInput('')
+    setMessage('Guess a number between 1 and 100')
+    setWon(false)
+  }
+
+  const guess = () => {
+    if (won) return
+    const n = parseInt(input)
+    if (isNaN(n) || n < 1 || n > 100) {
+      setMessage('Enter a valid number 1-100')
+      return
+    }
+    const a = attempts + 1
+    setAttempts(a)
+    if (n === target) {
+      setMessage(`🎉 Correct! You took ${a} attempts`)
+      setWon(true)
+    } else if (n < target) setMessage('📈 Too low! Try higher')
+    else setMessage('📉 Too high! Try lower')
+    setInput('')
+  }
+
+  return (
+    <div className="p-6 max-w-xl mx-auto">
+      <h2 className="text-xl font-semibold mb-2">Number Guessing</h2>
+      <p className="text-gray-300 mb-4">{message}</p>
+      <div className="flex items-center space-x-2">
+        <input value={input} onChange={(e) => setInput(e.target.value)}
+          className="bg-gray-800 border border-gray-700 rounded-md px-3 py-2 w-28 text-center" placeholder="1-100" />
+        <button onClick={guess} className="px-3 py-2 rounded-md bg-cyan-600/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-600/30">Guess</button>
+        <button onClick={newGame} className="px-3 py-2 rounded-md bg-gray-700 text-gray-200 border border-gray-600 hover:bg-gray-600">New Game</button>
+        <button onClick={onClose} className="px-3 py-2 rounded-md bg-gray-700 text-gray-200 border border-gray-600 hover:bg-gray-600">Close</button>
+      </div>
+      <div className="mt-3 text-sm text-gray-400">Attempts: {attempts}</div>
+    </div>
+  )
+}
+
+// Memory Game (4x4)
+const MemoryGame = ({ onClose }: { onClose: () => void }) => {
+  const base = ['🐶','🐱','🐭','🐰','🦊','🐼','🐻','🐹']
+  const [cards, setCards] = useState<string[]>([])
+  const [flipped, setFlipped] = useState<number[]>([])
+  const [matched, setMatched] = useState<boolean[]>(Array(16).fill(false))
+  const [moves, setMoves] = useState(0)
+
+  useEffect(() => {
+    const arr = [...base, ...base]
+    for (let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()* (i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] }
+    setCards(arr)
+  }, [])
+
+  const reset = () => {
+    const arr = [...base, ...base]
+    for (let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()* (i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] }
+    setCards(arr)
+    setFlipped([])
+    setMatched(Array(16).fill(false))
+    setMoves(0)
+  }
+
+  const onFlip = (i: number) => {
+    if (matched[i] || flipped.includes(i) || flipped.length === 2) return
+    const nf = [...flipped, i]
+    setFlipped(nf)
+    if (nf.length === 2) {
+      setMoves(m => m+1)
+      setTimeout(() => {
+        const [a,b] = nf
+        if (cards[a] === cards[b]) {
+          const nm = [...matched]
+          nm[a] = nm[b] = true
+          setMatched(nm)
+        }
+        setFlipped([])
+      }, 600)
+    }
+  }
+
+  const won = matched.every(Boolean)
+
+  return (
+    <div className="p-6 max-w-3xl mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-semibold">Memory Game</h2>
+          <p className="text-gray-400 text-sm">Match all pairs</p>
+        </div>
+        <div className="space-x-2">
+          <span className="text-sm text-gray-300">Moves: {moves}</span>
+          <button onClick={reset} className="px-3 py-1.5 text-sm rounded-md bg-cyan-600/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-600/30">Restart</button>
+          <button onClick={onClose} className="px-3 py-1.5 text-sm rounded-md bg-gray-700 text-gray-200 border border-gray-600 hover:bg-gray-600">Close</button>
+        </div>
+      </div>
+      {won && <div className="mb-3 text-green-400">🎉 You won in {moves} moves!</div>}
+      <div className="grid grid-cols-4 gap-3 max-w-[480px] mx-auto">
+        {Array.from({length:16}).map((_,i) => {
+          const show = flipped.includes(i) || matched[i]
+          return (
+            <button key={i} onClick={() => onFlip(i)}
+              className={`aspect-square rounded-xl border border-gray-700 flex items-center justify-center text-3xl font-bold transition-all ${show ? 'bg-white text-black' : 'bg-gray-800 text-transparent'}`}
+            >
+              <span>{cards[i]}</span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// Rock Paper Scissors
+const RockPaperScissorsGame = ({ onClose }: { onClose: () => void }) => {
+  const options = [
+    { key: 'rock', label: 'Rock ✊' },
+    { key: 'paper', label: 'Paper ✋' },
+    { key: 'scissors', label: 'Scissors ✌️' }
+  ] as const
+  type Opt = typeof options[number]['key']
+  const [player, setPlayer] = useState<Opt | null>(null)
+  const [computer, setComputer] = useState<Opt | null>(null)
+  const [result, setResult] = useState('Make your move!')
+  const [score, setScore] = useState({ you: 0, ai: 0, draw: 0 })
+
+  const play = (choice: Opt) => {
+    const ai = options[Math.floor(Math.random() * options.length)].key
+    setPlayer(choice)
+    setComputer(ai)
+    const outcomes: Record<Opt, Opt> = { rock: 'scissors', paper: 'rock', scissors: 'paper' }
+    if (choice === ai) { setResult('Draw!'); setScore(s => ({ ...s, draw: s.draw + 1 })) }
+    else if (outcomes[choice] === ai) { setResult('You win! 🎉'); setScore(s => ({ ...s, you: s.you + 1 })) }
+    else { setResult('Computer wins! 🤖'); setScore(s => ({ ...s, ai: s.ai + 1 })) }
+  }
+
+  const reset = () => { setPlayer(null); setComputer(null); setResult('Make your move!') }
+
+  return (
+    <div className="p-6 max-w-xl mx-auto">
+      <h2 className="text-xl font-semibold mb-2">Rock • Paper • Scissors</h2>
+      <div className="text-gray-300 mb-4">{result}</div>
+      <div className="flex items-center space-x-2 mb-3">
+        {options.map(o => (
+          <button key={o.key} onClick={() => play(o.key as Opt)}
+            className="px-3 py-2 rounded-md bg-cyan-600/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-600/30">
+            {o.label}
+          </button>
+        ))}
+        <button onClick={reset} className="px-3 py-2 rounded-md bg-gray-700 text-gray-200 border border-gray-600 hover:bg-gray-600">Reset</button>
+        <button onClick={onClose} className="px-3 py-2 rounded-md bg-gray-700 text-gray-200 border border-gray-600 hover:bg-gray-600">Close</button>
+      </div>
+      <div className="text-sm text-gray-400">You: {score.you} • AI: {score.ai} • Draw: {score.draw}</div>
+      <div className="mt-3 text-sm text-gray-400">You chose: {player ?? '-'} • Computer: {computer ?? '-'}</div>
+    </div>
+  )
+}
+
+// Game Library selector
+const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, onClose: () => void }) => {
+  const games = [
+    { key: 'tictactoe', name: 'Tic‑Tac‑Toe', emoji: '❌⭕', desc: 'Play vs computer' },
+    { key: 'number', name: 'Number Guess', emoji: '🎲', desc: 'Guess 1-100' },
+    { key: 'memory', name: 'Memory', emoji: '🧠', desc: 'Match pairs' },
+    { key: 'rps', name: 'Rock Paper Scissors', emoji: '✊✋✌️', desc: 'Best of luck' },
+  ]
+  return (
+    <GameModal title="Game Library" onClose={onClose}>
+      <div className="p-6 max-w-5xl mx-auto">
+        <p className="text-gray-300 mb-4">Choose a game to play while the AI is busy.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {games.map(g => (
+            <button key={g.key} onClick={() => onSelect(g.key)}
+              className="group rounded-2xl border border-gray-700 bg-gray-900/60 hover:bg-gray-800/60 transition-all p-5 text-left">
+              <div className="text-3xl mb-2">{g.emoji}</div>
+              <div className="text-white font-semibold">{g.name}</div>
+              <div className="text-gray-400 text-sm">{g.desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </GameModal>
+  )
+}
+
+// Simple Game Modal wrapper
+const GameModal = ({ title, onClose, children }: { title: string, onClose: () => void, children: React.ReactNode }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      className="fixed inset-0 md:inset-6 z-50 bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-none md:rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+    >
+      <div className="flex items-center justify-between p-4 bg-gray-800/50 border-b border-gray-700/50 flex-shrink-0">
+        <div className="flex items-center space-x-3">
+          <Monitor className="w-5 h-5 text-cyan-400" />
+          <span className="text-lg font-semibold text-white">{title}</span>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onClose}
+          className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-900/20 transition-all duration-200"
+          title="Close"
+        >
+          <X className="w-4 h-4" />
+        </motion.button>
+      </div>
+      <div className="flex-1 min-h-0 overflow-auto">
+        {children}
+      </div>
+    </motion.div>
+  )
+}
+
+// Tic-Tac-Toe with a simple computer AI opponent
+const TicTacToeGame = ({ onClose }: { onClose: () => void }) => {
+  const [board, setBoard] = useState<(null | 'X' | 'O')[]>(Array(9).fill(null))
+  const [human, setHuman] = useState<'X' | 'O'>('X')
+  const [current, setCurrent] = useState<'X' | 'O'>('X')
+  const [winner, setWinner] = useState<null | 'X' | 'O' | 'draw'>(null)
+
+  const lines = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ]
+
+  const calculateWinner = (b: (null | 'X' | 'O')[]) => {
+    for (const [a,bIndex,c] of lines) {
+      if (b[a] && b[a] === b[bIndex] && b[a] === b[c]) return b[a]
+    }
+    if (b.every(cell => cell)) return 'draw'
+    return null
+  }
+
+  const availableMoves = (b: (null | 'X' | 'O')[]) => b.map((v,i) => v ? -1 : i).filter(i => i !== -1)
+
+  const tryWinOrBlock = (b: (null | 'X' | 'O')[], player: 'X' | 'O') => {
+    for (const i of availableMoves(b)) {
+      const copy = [...b]
+      copy[i] = player
+      if (calculateWinner(copy) === player) return i
+    }
+    return -1
+  }
+
+  const pickBestMove = (b: (null | 'X' | 'O')[], ai: 'X' | 'O') => {
+    const opp: 'X' | 'O' = ai === 'X' ? 'O' : 'X'
+    // 1) Win
+    let move = tryWinOrBlock(b, ai)
+    if (move !== -1) return move
+    // 2) Block
+    move = tryWinOrBlock(b, opp)
+    if (move !== -1) return move
+    // 3) Center
+    if (b[4] === null) return 4
+    // 4) Corners
+    const corners = [0,2,6,8].filter(i => b[i] === null)
+    if (corners.length) return corners[Math.floor(Math.random() * corners.length)]
+    // 5) Sides
+    const sides = [1,3,5,7].filter(i => b[i] === null)
+    if (sides.length) return sides[Math.floor(Math.random() * sides.length)]
+    return -1
+  }
+
+  const handleClick = (idx: number) => {
+    if (winner || board[idx] || current !== human) return
+    const next = [...board]
+    next[idx] = human
+    const w = calculateWinner(next)
+    setBoard(next)
+    if (w) { setWinner(w); return }
+    setCurrent(human === 'X' ? 'O' : 'X')
+  }
+
+  // Computer move
+  useEffect(() => {
+    if (winner) return
+    const ai = human === 'X' ? 'O' : 'X'
+    if (current === ai) {
+      const timeout = setTimeout(() => {
+        const move = pickBestMove(board, ai)
+        if (move !== -1) {
+          const next = [...board]
+          next[move] = ai
+          const w = calculateWinner(next)
+          setBoard(next)
+          if (w) { setWinner(w); return }
+          setCurrent(human)
+        }
+      }, 400)
+      return () => clearTimeout(timeout)
+    }
+  }, [current, board, human, winner])
+
+  const reset = () => {
+    setBoard(Array(9).fill(null))
+    setCurrent('X')
+    setWinner(null)
+  }
+
+  return (
+    <div className="p-6 max-w-3xl mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-semibold">Tic‑Tac‑Toe</h2>
+          <p className="text-gray-400 text-sm">You vs Computer</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-300">You are</span>
+          <select
+            value={human}
+            onChange={(e) => {
+              const val = (e.target as HTMLSelectElement).value as 'X'|'O'
+              setHuman(val)
+              reset()
+            }}
+            className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-sm"
+          >
+            <option value="X">X</option>
+            <option value="O">O</option>
+          </select>
+          <button onClick={reset} className="ml-2 px-3 py-1.5 text-sm rounded-md bg-cyan-600/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-600/30">Restart</button>
+          <button onClick={onClose} className="ml-2 px-3 py-1.5 text-sm rounded-md bg-gray-700 text-gray-200 border border-gray-600 hover:bg-gray-600">Close</button>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-3 w-full max-w-[360px] mx-auto">
+        {board.map((cell, i) => (
+          <button
+            key={i}
+            onClick={() => handleClick(i)}
+            className="aspect-square rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-3xl font-bold transition-all hover:bg-gray-700"
+          >
+            <span className={cell === 'X' ? 'text-red-400' : 'text-blue-400'}>{cell}</span>
+          </button>
+        ))}
+      </div>
+      <div className="mt-4 text-center text-sm text-gray-300">
+        {!winner && <span>Turn: <span className="font-semibold">{current}</span> {current !== human ? '(Computer)' : '(You)'}</span>}
+        {winner === 'draw' && <span>It’s a draw! 🤝</span>}
+        {winner === 'X' && <span>Winner: X {human === 'X' ? '🎉' : '🤖'}</span>}
+        {winner === 'O' && <span>Winner: O {human === 'O' ? '🎉' : '🤖'}</span>}
+      </div>
+    </div>
+  )
+}
+
 interface Message {
   id: string
   role: 'user' | 'assistant'
@@ -355,6 +712,8 @@ function ChatPageContent() {
     js: string
     title: string
   } | null>(null)
+  const [showGameLauncher, setShowGameLauncher] = useState(false)
+  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps'>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -846,6 +1205,20 @@ function ChatPageContent() {
                             <span className="text-sm font-medium">Open Code Editor</span>
                           </motion.button>
                         )}
+                        {/* Fallback CTA: Offer to play games */}
+                        {message.role === 'assistant' && message.fallback && (
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <span className="text-xs text-gray-400">Service is busy. Want to play a game?</span>
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => setShowGameLauncher(true)}
+                              className="px-3 py-1.5 text-xs rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-500/30"
+                            >
+                              Open Games
+                            </motion.button>
+                          </div>
+                        )}
                         
                         <div className={`text-xs text-gray-500 mt-2 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
                           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -919,6 +1292,46 @@ function ChatPageContent() {
                 title={codeEditorData.title}
                 onClose={() => setShowCodeEditor(false)}
               />
+              </>
+            )}
+          </AnimatePresence>
+
+          {/* Game Library Overlay */}
+          <AnimatePresence>
+            {showGameLauncher && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowGameLauncher(false)}
+                  className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+                />
+                <GameLibrary
+                  onSelect={(key) => { setActiveGame(key as any); setShowGameLauncher(false) }}
+                  onClose={() => setShowGameLauncher(false)}
+                />
+              </>
+            )}
+          </AnimatePresence>
+
+          {/* Active Game Overlay */}
+          <AnimatePresence>
+            {activeGame && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setActiveGame(null)}
+                  className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+                />
+                <GameModal title={{ tictactoe: 'Tic‑Tac‑Toe', number: 'Number Guessing', memory: 'Memory Game', rps: 'Rock • Paper • Scissors' }[activeGame]} onClose={() => setActiveGame(null)}>
+                  {activeGame === 'tictactoe' && <TicTacToeGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'number' && <NumberGuessGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'memory' && <MemoryGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'rps' && <RockPaperScissorsGame onClose={() => setActiveGame(null)} />}
+                </GameModal>
               </>
             )}
           </AnimatePresence>
