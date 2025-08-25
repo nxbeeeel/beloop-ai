@@ -6,10 +6,20 @@ export async function POST(request: Request) {
   try {
     const { message, history } = await request.json()
 
+    // Debug information
+    console.log('API Key exists:', !!process.env.GEMINI_API_KEY)
+    console.log('API Key length:', process.env.GEMINI_API_KEY?.length || 0)
+    console.log('Environment:', process.env.NODE_ENV)
+
     if (!process.env.GEMINI_API_KEY) {
       console.error('GEMINI_API_KEY is not set in environment variables')
       return new Response(JSON.stringify({ 
-        error: 'Gemini API key not configured. Please check your environment variables in Vercel dashboard and redeploy.' 
+        error: 'Gemini API key not configured. Please check your environment variables in Vercel dashboard and redeploy.',
+        debug: {
+          hasApiKey: false,
+          environment: process.env.NODE_ENV,
+          timestamp: new Date().toISOString()
+        }
       }), { 
         status: 500,
         headers: { 'Content-Type': 'application/json' }
@@ -19,7 +29,12 @@ export async function POST(request: Request) {
     if (process.env.GEMINI_API_KEY === 'your_actual_gemini_api_key_here') {
       console.error('GEMINI_API_KEY is still set to placeholder value')
       return new Response(JSON.stringify({ 
-        error: 'Please replace the placeholder API key with your actual Gemini API key in .env.local file.' 
+        error: 'Please replace the placeholder API key with your actual Gemini API key in .env.local file.',
+        debug: {
+          hasApiKey: true,
+          isPlaceholder: true,
+          environment: process.env.NODE_ENV
+        }
       }), { 
         status: 500,
         headers: { 'Content-Type': 'application/json' }
@@ -66,7 +81,12 @@ export async function POST(request: Request) {
     // Check for specific API key errors
     if (error?.message && error.message.includes('API key')) {
       return new Response(JSON.stringify({ 
-        error: 'Invalid API key. Please check your Gemini API key in the environment variables.' 
+        error: 'Invalid API key. Please check your Gemini API key in the environment variables.',
+        debug: {
+          errorMessage: error.message,
+          hasApiKey: !!process.env.GEMINI_API_KEY,
+          environment: process.env.NODE_ENV
+        }
       }), { 
         status: 401,
         headers: { 'Content-Type': 'application/json' }
@@ -76,7 +96,12 @@ export async function POST(request: Request) {
     // Check for model not found errors
     if (error?.message && error.message.includes('not found')) {
       return new Response(JSON.stringify({ 
-        error: 'Model not available. Please check your API key and try again.' 
+        error: 'Model not available. Please check your API key and try again.',
+        debug: {
+          errorMessage: error.message,
+          hasApiKey: !!process.env.GEMINI_API_KEY,
+          environment: process.env.NODE_ENV
+        }
       }), { 
         status: 404,
         headers: { 'Content-Type': 'application/json' }
@@ -84,7 +109,12 @@ export async function POST(request: Request) {
     }
     
     return new Response(JSON.stringify({ 
-      error: 'Failed to get response from AI. Please try again.' 
+      error: 'Failed to get response from AI. Please try again.',
+      debug: {
+        errorMessage: error.message,
+        hasApiKey: !!process.env.GEMINI_API_KEY,
+        environment: process.env.NODE_ENV
+      }
     }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }
