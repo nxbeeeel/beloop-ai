@@ -625,8 +625,8 @@ export default function ChatPage() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h1 className="text-xl font-bold text-white mb-1 truncate">{currentSession.title}</h1>
-                    <div className="flex items-center space-x-4 text-sm text-gray-400 flex-wrap">
+                    <h1 className="text-lg sm:text-xl font-bold text-white mb-1 truncate">{currentSession.title}</h1>
+                    <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm text-gray-400 flex-wrap">
                       <div className="flex items-center space-x-1">
                         <MessageSquare className="w-4 h-4 flex-shrink-0" />
                         <span>{currentSession.messages.length} messages</span>
@@ -638,7 +638,7 @@ export default function ChatPage() {
                       {currentSession.tags && (
                         <div className="flex items-center space-x-2 flex-wrap">
                           {currentSession.tags.slice(0, 2).map((tag) => (
-                            <span key={tag} className="px-3 py-1 bg-gray-800/50 rounded-full text-xs border border-gray-700">
+                            <span key={tag} className="px-2 sm:px-3 py-0.5 sm:py-1 bg-gray-800/50 rounded-full text-xs border border-gray-700">
                               {tag}
                             </span>
                           ))}
@@ -675,7 +675,7 @@ export default function ChatPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 lg:space-y-6">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6">
             <AnimatePresence>
               {currentSession.messages.map((message, index) => (
                 <motion.div
@@ -685,9 +685,9 @@ export default function ChatPage() {
                   transition={{ delay: index * 0.1 }}
                   className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`flex items-start space-x-3 lg:space-x-6 max-w-full lg:max-w-5xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                  <div className={`flex items-start space-x-2 sm:space-x-3 lg:space-x-6 max-w-full lg:max-w-5xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                     {/* Professional Avatar */}
-                    <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       message.role === 'user' 
                         ? 'bg-gradient-to-r from-gray-600 to-gray-800' 
                         : selectedAgent 
@@ -695,35 +695,35 @@ export default function ChatPage() {
                           : 'bg-gradient-to-r from-gray-600 to-gray-800'
                     }`}>
                       {message.role === 'user' ? (
-                        <User className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                        <User className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
                       ) : selectedAgent ? (
-                        <span className="text-lg lg:text-xl">{selectedAgent.emoji}</span>
+                        <span className="text-base sm:text-lg lg:text-xl">{selectedAgent.emoji}</span>
                       ) : (
-                        <Brain className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                        <Brain className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
                       )}
                     </div>
 
                     {/* Professional Message Content */}
                     <div className={`flex-1 max-w-full ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                      <div className={`p-4 lg:p-6 rounded-2xl ${
+                      <div className={`p-3 sm:p-4 lg:p-6 rounded-2xl ${
                         message.role === 'user'
                           ? 'bg-gray-800/50 border border-gray-700'
                           : 'bg-gray-800/30 border border-gray-700'
                       }`}>
                         <div className="prose prose-invert max-w-none">
-                          <p className="text-white leading-relaxed whitespace-pre-wrap text-sm lg:text-base">
+                          <p className="text-white leading-relaxed whitespace-pre-wrap text-xs sm:text-sm lg:text-base">
                             {message.content}
                           </p>
                         </div>
                       </div>
 
                       {/* Professional Message Actions */}
-                      <div className={`flex items-center space-x-2 lg:space-x-4 mt-3 lg:mt-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`flex items-center space-x-1 sm:space-x-2 lg:space-x-4 mt-2 sm:mt-3 lg:mt-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => copyToClipboard(message.content, message.id)}
-                          className="p-2 rounded-lg bg-gray-800/50 text-gray-400 hover:text-gray-200 transition-all duration-300 border border-gray-700"
+                          className="p-1.5 sm:p-2 rounded-lg bg-gray-800/50 text-gray-400 hover:text-gray-200 transition-all duration-300 border border-gray-700"
                         >
                           {copiedId === message.id ? (
                             <Check className="w-4 h-4" />
@@ -740,7 +740,7 @@ export default function ChatPage() {
                                 key={idx}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
-                                className="px-2 lg:px-3 py-1 bg-gray-800/50 rounded-full text-xs hover:bg-gray-700/50 transition-all duration-300 border border-gray-700"
+                                className="px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 bg-gray-800/50 rounded-full text-xs hover:bg-gray-700/50 transition-all duration-300 border border-gray-700"
                               >
                                 {reaction.emoji} {reaction.count}
                               </motion.button>
@@ -748,7 +748,7 @@ export default function ChatPage() {
                           </div>
                         )}
                         
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 text-xs">
                           {formatTime(message.timestamp)}
                         </span>
                       </div>
@@ -765,18 +765,18 @@ export default function ChatPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex justify-start"
               >
-                <div className="flex items-start space-x-3 lg:space-x-6">
-                  <div className={`w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-r ${selectedAgent ? selectedAgent.color : 'from-gray-600 to-gray-800'} rounded-xl flex items-center justify-center`}>
+                <div className="flex items-start space-x-2 sm:space-x-3 lg:space-x-6">
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-r ${selectedAgent ? selectedAgent.color : 'from-gray-600 to-gray-800'} rounded-xl flex items-center justify-center`}>
                     {selectedAgent ? (
-                      <span className="text-lg lg:text-xl">{selectedAgent.emoji}</span>
+                      <span className="text-base sm:text-lg lg:text-xl">{selectedAgent.emoji}</span>
                     ) : (
-                      <Brain className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                                              <Brain className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
                     )}
                   </div>
-                  <div className="p-4 lg:p-6 rounded-2xl bg-gray-800/30 border border-gray-700">
+                  <div className="p-3 sm:p-4 lg:p-6 rounded-2xl bg-gray-800/30 border border-gray-700">
                     <div className="flex items-center space-x-3">
                       <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-                      <span className="text-gray-400 text-sm lg:text-base">AI is thinking...</span>
+                      <span className="text-gray-400 text-xs sm:text-sm lg:text-base">AI is thinking...</span>
                     </div>
                   </div>
                 </div>
@@ -787,9 +787,9 @@ export default function ChatPage() {
           </div>
 
           {/* Professional Input Area */}
-          <div className="p-4 lg:p-6 border-t border-gray-800 bg-gray-900/95 backdrop-blur-xl">
+          <div className="p-3 sm:p-4 lg:p-6 border-t border-gray-800 bg-gray-900/95 backdrop-blur-xl">
             <div className="max-w-full lg:max-w-5xl mx-auto">
-              <div className="flex items-end space-x-3 lg:space-x-4">
+              <div className="flex items-end space-x-2 sm:space-x-3 lg:space-x-4">
                 <div className="flex-1 relative">
                   <textarea
                     ref={inputRef}
@@ -797,11 +797,11 @@ export default function ChatPage() {
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder={selectedAgent ? `Ask ${selectedAgent.name} anything...` : "Ask me anything - from creative writing to problem-solving, learning, planning, or just having a conversation..."}
-                    className="w-full p-3 lg:p-4 pr-20 lg:pr-24 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-400 resize-none focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500/20 transition-all duration-300 text-sm"
+                    className="w-full p-2 sm:p-3 lg:p-4 pr-16 sm:pr-20 lg:pr-24 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-400 resize-none focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500/20 transition-all duration-300 text-xs sm:text-sm"
                     rows={1}
                     style={{ minHeight: '50px', maxHeight: '150px' }}
                   />
-                  <div className="absolute bottom-2 right-2 text-xs text-gray-500 hidden lg:block">
+                  <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 text-xs text-gray-500 hidden lg:block">
                     Enter to send, Shift+Enter for new line
                   </div>
                 </div>
@@ -810,7 +810,7 @@ export default function ChatPage() {
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim() || isLoading}
-                  className={`p-3 lg:p-4 rounded-xl text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all duration-300 flex-shrink-0 ${
+                  className={`p-2 sm:p-3 lg:p-4 rounded-xl text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all duration-300 flex-shrink-0 ${
                     selectedAgent 
                       ? `bg-gradient-to-r ${selectedAgent.color} hover:shadow-${selectedAgent.color.split('-')[1]}-500/25`
                       : 'bg-gradient-to-r from-gray-600 to-gray-800 hover:shadow-gray-500/25'
@@ -822,7 +822,7 @@ export default function ChatPage() {
               
               {/* Professional Features */}
               <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2 lg:space-x-4 text-xs lg:text-sm text-gray-400 flex-wrap">
+                <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4 text-xs lg:text-sm text-gray-400 flex-wrap">
                   <div className="flex items-center space-x-1 lg:space-x-2">
                     <Shield className="w-3 h-3 lg:w-4 lg:h-4" />
                     <span className="hidden sm:inline">Enterprise Security</span>
