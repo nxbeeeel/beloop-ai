@@ -29,7 +29,12 @@ import {
   Sparkles,
   Zap,
   Menu,
-  X
+  X,
+  Image,
+  Lightbulb,
+  Calendar,
+  Mic,
+  MoreHorizontal
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -38,132 +43,20 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
-  reactions?: { emoji: string; count: number }[]
-}
-
-interface ChatSession {
-  id: string
-  title: string
-  messages: Message[]
-  createdAt: Date
-  updatedAt: Date
-  isPinned?: boolean
-  tags?: string[]
-  participants?: string[]
-}
-
-interface Agent {
-  id: string
-  name: string
-  emoji: string
-  description: string
-  personality: string
-  color: string
 }
 
 export default function ChatPage() {
-  const [currentSession, setCurrentSession] = useState<ChatSession>({
-    id: '1',
-    title: 'Personal AI Assistant',
-    messages: [{
+  const [messages, setMessages] = useState<Message[]>([
+    {
       id: '1',
       role: 'assistant',
-      content: 'Hello! I\'m your personal AI assistant. I can help you with anything - from writing and research to creative projects, problem-solving, learning new topics, planning, and much more. What would you like to explore today?',
-      timestamp: new Date(),
-      reactions: [{ emoji: '🤖', count: 3 }]
-    }],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    isPinned: true,
-    tags: ['personal', 'assistant', 'ai'],
-    participants: ['You', 'AI Assistant']
-  })
-  
-  const [inputValue, setInputValue] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [copiedId, setCopiedId] = useState<string | null>(null)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [selectedView, setSelectedView] = useState<'chats' | 'agents' | 'analytics'>('chats')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
-  
-  const agents: Agent[] = [
-    {
-      id: 'writing',
-      name: 'Writing Assistant',
-      emoji: '✍️',
-      description: 'Creative writing, essays, content',
-      personality: 'I\'m your creative writing partner. I help with storytelling, content creation, and making your words flow beautifully.',
-      color: 'from-purple-500 to-pink-600'
-    },
-    {
-      id: 'productivity',
-      name: 'Productivity Coach',
-      emoji: '🎯',
-      description: 'Planning, goals, time management',
-      personality: 'I\'m your productivity coach. I help you organize tasks, set goals, and maximize your efficiency.',
-      color: 'from-blue-500 to-cyan-600'
-    },
-    {
-      id: 'learning',
-      name: 'Learning Tutor',
-      emoji: '🧠',
-      description: 'Education, skills, knowledge',
-      personality: 'I\'m your learning tutor. I break down complex topics and help you master new skills effectively.',
-      color: 'from-green-500 to-emerald-600'
-    },
-    {
-      id: 'creative',
-      name: 'Creative Partner',
-      emoji: '💡',
-      description: 'Ideas, brainstorming, innovation',
-      personality: 'I\'m your creative partner. I spark ideas, help with brainstorming, and push your creative boundaries.',
-      color: 'from-orange-500 to-red-600'
-    },
-    {
-      id: 'research',
-      name: 'Research Assistant',
-      emoji: '🔍',
-      description: 'Analysis, insights, information',
-      personality: 'I\'m your research assistant. I help you find, analyze, and synthesize information effectively.',
-      color: 'from-indigo-500 to-purple-600'
-    }
-  ]
-  
-  const [chatHistory, setChatHistory] = useState<ChatSession[]>([
-    {
-      id: '1',
-      title: 'Creative Writing Project',
-      messages: [],
-      createdAt: new Date(Date.now() - 86400000),
-      updatedAt: new Date(Date.now() - 3600000),
-      isPinned: true,
-      tags: ['writing', 'creative', 'storytelling'],
-      participants: ['You', 'AI Assistant']
-    },
-    {
-      id: '2',
-      title: 'Travel Planning',
-      messages: [],
-      createdAt: new Date(Date.now() - 172800000),
-      updatedAt: new Date(Date.now() - 7200000),
-      isPinned: false,
-      tags: ['travel', 'planning', 'vacation'],
-      participants: ['You', 'AI Assistant']
-    },
-    {
-      id: '3',
-      title: 'Learning New Skills',
-      messages: [],
-      createdAt: new Date(Date.now() - 259200000),
-      updatedAt: new Date(Date.now() - 10800000),
-      isPinned: false,
-      tags: ['learning', 'skills', 'education'],
-      participants: ['You', 'AI Assistant']
+      content: 'Hello! I\'m your AI assistant. How can I help you today?',
+      timestamp: new Date()
     }
   ])
   
+  const [inputValue, setInputValue] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -173,34 +66,13 @@ export default function ChatPage() {
 
   useEffect(() => {
     scrollToBottom()
-  }, [currentSession.messages])
+  }, [messages])
 
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
     }
   }, [])
-
-  // Close mobile sidebar when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const sidebar = document.getElementById('mobile-sidebar')
-      const menuButton = document.getElementById('mobile-menu-button')
-      
-      if (sidebar && !sidebar.contains(event.target as Node) && 
-          menuButton && !menuButton.contains(event.target as Node)) {
-        setIsMobileSidebarOpen(false)
-      }
-    }
-
-    if (isMobileSidebarOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isMobileSidebarOpen])
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return
@@ -212,16 +84,9 @@ export default function ChatPage() {
       timestamp: new Date()
     }
 
-    const updatedSession = {
-      ...currentSession,
-      messages: [...currentSession.messages, userMessage],
-      updatedAt: new Date()
-    }
-
-    setCurrentSession(updatedSession)
+    setMessages(prev => [...prev, userMessage])
     setInputValue('')
     setIsLoading(true)
-    setIsMobileSidebarOpen(false) // Close mobile sidebar after sending
 
     try {
       const response = await fetch('/api/chat', {
@@ -231,7 +96,7 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           message: userMessage.content,
-          history: currentSession.messages.map(m => ({ role: m.role, content: m.content }))
+          history: messages.map(m => ({ role: m.role, content: m.content }))
         }),
       })
 
@@ -245,32 +110,19 @@ export default function ChatPage() {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: data.response,
-        timestamp: new Date(),
-        reactions: [{ emoji: '👍', count: 0 }]
+        timestamp: new Date()
       }
 
-      const finalSession = {
-        ...updatedSession,
-        messages: [...updatedSession.messages, assistantMessage],
-        updatedAt: new Date()
-      }
-
-      setCurrentSession(finalSession)
+      setMessages(prev => [...prev, assistantMessage])
     } catch (error) {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please make sure you have set up your Gemini API key in the environment variables.',
+        content: 'Sorry, I encountered an error. Please try again.',
         timestamp: new Date()
       }
       
-      const finalSession = {
-        ...updatedSession,
-        messages: [...updatedSession.messages, errorMessage],
-        updatedAt: new Date()
-      }
-
-      setCurrentSession(finalSession)
+      setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
@@ -283,676 +135,179 @@ export default function ChatPage() {
     }
   }
 
-  const copyToClipboard = async (text: string, messageId: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopiedId(messageId)
-      setTimeout(() => setCopiedId(null), 2000)
-    } catch (err) {
-      console.error('Failed to copy text: ', err)
-    }
-  }
-
-  const createNewChat = () => {
-    const newSession: ChatSession = {
-      id: Date.now().toString(),
-      title: selectedAgent ? `${selectedAgent.name} Chat` : 'New Conversation',
-      messages: [{
-        id: '1',
-        role: 'assistant',
-        content: selectedAgent ? selectedAgent.personality : 'Hello! I\'m your personal AI assistant. I can help you with anything - from writing and research to creative projects, problem-solving, learning new topics, planning, and much more. What would you like to explore today?',
-        timestamp: new Date(),
-        reactions: [{ emoji: selectedAgent ? selectedAgent.emoji : '🤖', count: 0 }]
-      }],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isPinned: false,
-      tags: selectedAgent ? [selectedAgent.id] : ['new'],
-      participants: ['You', selectedAgent ? selectedAgent.name : 'AI Assistant']
-    }
-    setCurrentSession(newSession)
-    setChatHistory(prev => [newSession, ...prev])
-    setIsMobileSidebarOpen(false) // Close mobile sidebar
-  }
-
-  const selectAgent = (agent: Agent) => {
-    setSelectedAgent(agent)
-    setSelectedView('chats')
-    createNewChat()
-  }
-
-  const togglePinChat = (chatId: string) => {
-    setChatHistory(prev => prev.map(chat => 
-      chat.id === chatId ? { ...chat, isPinned: !chat.isPinned } : chat
-    ))
-  }
-
-  const deleteChat = (chatId: string) => {
-    setChatHistory(prev => prev.filter(chat => chat.id !== chatId))
-    if (currentSession.id === chatId) {
-      createNewChat()
-    }
-  }
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  }
-
-  const formatDate = (date: Date) => {
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    
-    if (days === 0) return 'Today'
-    if (days === 1) return 'Yesterday'
-    if (days < 7) return `${days} days ago`
-    return date.toLocaleDateString()
-  }
-
-  const filteredChats = chatHistory.filter(chat => 
-    chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    chat.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
-
-  const pinnedChats = filteredChats.filter(chat => chat.isPinned)
-  const unpinnedChats = filteredChats.filter(chat => !chat.isPinned)
+  const quickActions = [
+    { icon: Image, label: 'Create image', color: 'from-green-500 to-emerald-600' },
+    { icon: Lightbulb, label: 'Brainstorm', color: 'from-yellow-500 to-orange-600' },
+    { icon: Calendar, label: 'Make a plan', color: 'from-yellow-500 to-orange-600' },
+    { icon: Code, label: 'Code', color: 'from-blue-500 to-cyan-600' },
+    { icon: MoreHorizontal, label: 'More', color: 'from-gray-500 to-gray-600' }
+  ]
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden font-mono">
-      {/* Animated Background */}
-      <div className="fixed inset-0 bg-grid opacity-3"></div>
-      <div className="fixed inset-0 bg-noise opacity-2"></div>
-      
-      {/* Floating Particles */}
-      <div className="particles">
-        {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            className="particle"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 8}s`,
-              animationDuration: `${8 + Math.random() * 4}s`
-            }}
-          />
-        ))}
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      {/* Status Bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-4 py-2">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">4:11</span>
+            <div className="flex space-x-1">
+              <div className="w-1 h-1 bg-white rounded-full"></div>
+              <div className="w-1 h-1 bg-white rounded-full"></div>
+              <div className="w-1 h-1 bg-white rounded-full"></div>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
+              <div className="w-3 h-2 bg-white rounded-sm"></div>
+              <div className="w-1 h-2 bg-white rounded-sm"></div>
+            </div>
+            <div className="w-4 h-4 border-2 border-white rounded-full flex items-center justify-center">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
+            </div>
+            <div className="w-6 h-3 border border-white rounded-sm flex items-center justify-center">
+              <div className="w-4 h-1.5 bg-white rounded-sm"></div>
+            </div>
+            <div className="w-4 h-4 border border-white rounded-full flex items-center justify-center">
+              <div className="w-2 h-2 bg-white rounded-full animate-spin"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="flex relative z-10 h-screen">
-        {/* Mobile Menu Button */}
-        <div className="lg:hidden fixed top-4 left-4 z-50">
-          <motion.button
-            id="mobile-menu-button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-            className="p-3 bg-gray-900/95 backdrop-blur-xl border border-gray-800 rounded-lg text-gray-400 hover:text-gray-200 transition-all duration-300"
-          >
-            {isMobileSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </motion.button>
-        </div>
-
-        {/* Sidebar - Hidden on mobile by default */}
-        <div 
-          id="mobile-sidebar"
-          className={`${
-            isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } lg:translate-x-0 lg:relative lg:${sidebarCollapsed ? 'w-16' : 'w-80'} fixed lg:static inset-y-0 left-0 z-40 w-80 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800 flex flex-col transition-all duration-300`}
-        >
-          {/* Header */}
-          <div className="p-4 border-b border-gray-800">
-            <div className="flex items-center justify-between mb-4">
-              <Link href="/" className="flex items-center space-x-3 group">
-                <div className="w-8 h-8 bg-gradient-to-r from-gray-700 to-gray-900 rounded-lg flex items-center justify-center group-hover:animate-glow transition-all duration-300 border border-gray-600">
-                  <Code className="w-5 h-5 text-gray-300" />
-                </div>
-                {(!sidebarCollapsed || window.innerWidth < 1024) && (
-                  <div className="flex items-center space-x-2">
-                    <Sparkles className="w-4 h-4 text-gray-400" />
-                    <span className="text-lg font-bold text-gray-200">Beloop AI</span>
-                  </div>
-                )}
-              </Link>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 transition-all duration-300 hidden lg:block"
-              >
-                {sidebarCollapsed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </motion.button>
+      {/* Header */}
+      <div className="pt-12 pb-4 px-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
+              <Menu className="w-5 h-5 text-gray-300" />
             </div>
-            
-            {(!sidebarCollapsed || window.innerWidth < 1024) && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={createNewChat}
-                className="w-full py-3 px-4 bg-gradient-to-r from-gray-700/50 to-gray-800/50 border border-gray-600 rounded-lg text-gray-200 font-semibold hover:from-gray-600/50 hover:to-gray-700/50 transition-all duration-300 flex items-center justify-center space-x-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="text-sm">New Chat</span>
-              </motion.button>
-            )}
           </div>
-
-          {/* Search */}
-          {(!sidebarCollapsed || window.innerWidth < 1024) && (
-            <div className="p-4 border-b border-gray-800">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search conversations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500/20 transition-all duration-300 text-sm"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Navigation Tabs */}
-          {(!sidebarCollapsed || window.innerWidth < 1024) && (
-            <div className="p-4 border-b border-gray-800">
-              <div className="flex space-x-1 bg-gray-800/50 rounded-lg p-1">
-                {[
-                  { id: 'chats', label: 'Chats', icon: MessageSquare },
-                  { id: 'agents', label: 'Agents', icon: Users },
-                  { id: 'analytics', label: 'Analytics', icon: BarChart3 }
-                ].map((tab) => (
-                  <motion.button
-                    key={tab.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedView(tab.id as any)}
-                    className={`flex-1 flex items-center justify-center space-x-1 py-2 px-3 rounded-md text-xs font-medium transition-all duration-300 ${
-                      selectedView === tab.id
-                        ? 'bg-gradient-to-r from-gray-700/50 to-gray-800/50 text-gray-200 border border-gray-600'
-                        : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/50'
-                    }`}
-                  >
-                    <tab.icon className="w-3 h-3" />
-                    <span>{tab.label}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Content Area */}
-          <div className="flex-1 overflow-y-auto">
-            {selectedView === 'chats' && (
-              <div className="p-4 space-y-4">
-                {/* Pinned Chats */}
-                {pinnedChats.length > 0 && (
-                  <div>
-                    <div className="text-xs text-gray-500 font-medium mb-3 px-2">Pinned</div>
-                    <div className="space-y-2">
-                      {pinnedChats.map((chat) => (
-                        <ChatItem
-                          key={chat.id}
-                          chat={chat}
-                          isActive={currentSession.id === chat.id}
-                          onSelect={() => {
-                            setCurrentSession(chat)
-                            setIsMobileSidebarOpen(false)
-                          }}
-                          onPin={() => togglePinChat(chat.id)}
-                          onDelete={() => deleteChat(chat.id)}
-                          collapsed={sidebarCollapsed && window.innerWidth >= 1024}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Regular Chats */}
-                {unpinnedChats.length > 0 && (
-                  <div>
-                    <div className="text-xs text-gray-500 font-medium mb-3 px-2">Recent</div>
-                    <div className="space-y-2">
-                      {unpinnedChats.map((chat) => (
-                        <ChatItem
-                          key={chat.id}
-                          chat={chat}
-                          isActive={currentSession.id === chat.id}
-                          onSelect={() => {
-                            setCurrentSession(chat)
-                            setIsMobileSidebarOpen(false)
-                          }}
-                          onPin={() => togglePinChat(chat.id)}
-                          onDelete={() => deleteChat(chat.id)}
-                          collapsed={sidebarCollapsed && window.innerWidth >= 1024}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {selectedView === 'agents' && (
-              <div className="p-4 space-y-4">
-                <div className="text-sm text-gray-400 font-medium mb-3 px-2">Available Assistants</div>
-                <div className="space-y-3">
-                  {agents.map((agent) => (
-                    <motion.div
-                      key={agent.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => selectAgent(agent)}
-                      className="p-4 bg-gray-800/50 rounded-xl border border-gray-700 hover:border-gray-500 transition-all duration-300 cursor-pointer group"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-12 h-12 bg-gradient-to-r ${agent.color} rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300`}>
-                          {agent.emoji}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-base font-semibold text-white mb-1">{agent.name}</h4>
-                          <p className="text-sm text-gray-400">{agent.description}</p>
-                        </div>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedView === 'analytics' && (
-              <div className="p-4 space-y-4">
-                <div className="text-sm text-gray-400 font-medium mb-3 px-2">Analytics</div>
-                <div className="space-y-3">
-                  <div className="p-6 bg-gray-800/50 rounded-xl border border-gray-700">
-                    <div className="text-sm text-gray-400 mb-2">Total Conversations</div>
-                    <div className="text-3xl font-bold text-gray-200">{chatHistory.length}</div>
-                  </div>
-                  <div className="p-6 bg-gray-800/50 rounded-xl border border-gray-700">
-                    <div className="text-sm text-gray-400 mb-2">Active Agents</div>
-                    <div className="text-3xl font-bold text-gray-200">{agents.length}</div>
-                  </div>
-                  <div className="p-6 bg-gray-800/50 rounded-xl border border-gray-700">
-                    <div className="text-sm text-gray-400 mb-2">Avg Response Time</div>
-                    <div className="text-3xl font-bold text-gray-200">&lt;2s</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div className="p-4 border-t border-gray-800">
-            <div className="flex items-center justify-between text-sm text-gray-400">
-              <span>Enterprise Plan</span>
-              {(!sidebarCollapsed || window.innerWidth < 1024) && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
-                >
-                  <Crown className="w-4 h-4" />
-                  <span>Upgrade</span>
-                </motion.button>
-              )}
+          
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 bg-purple-600 rounded-full px-3 py-1.5">
+              <Sparkles className="w-4 h-4 text-white" />
+              <span className="text-sm font-medium text-white">Get Plus</span>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Mobile Sidebar Overlay */}
-        {isMobileSidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
-            onClick={() => setIsMobileSidebarOpen(false)}
-          />
-        )}
+      {/* Main Content */}
+      <div className="flex-1 px-4 pb-20">
+        {/* Welcome Message */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-white mb-6">What can I help with?</h1>
+        </div>
 
-        {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col lg:ml-0">
-          {/* Professional Chat Header */}
-          <div className="p-4 border-b border-gray-800 bg-gray-900/95 backdrop-blur-xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4 min-w-0 flex-1">
-                <div className="flex items-center space-x-4 min-w-0">
-                  <div className={`w-12 h-12 bg-gradient-to-r ${selectedAgent ? selectedAgent.color : 'from-gray-600 to-gray-800'} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                    {selectedAgent ? (
-                      <span className="text-2xl">{selectedAgent.emoji}</span>
-                    ) : (
-                      <Brain className="w-6 h-6 text-white" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h1 className="text-lg sm:text-xl font-bold text-white mb-1 truncate">{currentSession.title}</h1>
-                    <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm text-gray-400 flex-wrap">
-                      <div className="flex items-center space-x-1">
-                        <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                        <span>{currentSession.messages.length} messages</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Users className="w-4 h-4 flex-shrink-0" />
-                        <span>{currentSession.participants?.length || 2} participants</span>
-                      </div>
-                      {currentSession.tags && (
-                        <div className="flex items-center space-x-2 flex-wrap">
-                          {currentSession.tags.slice(0, 2).map((tag) => (
-                            <span key={tag} className="px-2 sm:px-3 py-0.5 sm:py-1 bg-gray-800/50 rounded-full text-xs border border-gray-700">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 flex-shrink-0">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-3 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 transition-all duration-300"
-                >
-                  <Share2 className="w-5 h-5" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-3 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 transition-all duration-300"
-                >
-                  <Download className="w-5 h-5" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-3 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 transition-all duration-300"
-                >
-                  <Settings className="w-5 h-5" />
-                </motion.button>
-              </div>
-            </div>
-          </div>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          {quickActions.map((action, index) => (
+            <motion.button
+              key={index}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`p-4 rounded-2xl bg-gradient-to-r ${action.color} flex flex-col items-center space-y-2 transition-all duration-300`}
+            >
+              <action.icon className="w-6 h-6 text-white" />
+              <span className="text-sm font-medium text-white">{action.label}</span>
+            </motion.button>
+          ))}
+        </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6">
-            <AnimatePresence>
-              {currentSession.messages.map((message, index) => (
-                <motion.div
-                  key={message.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`flex items-start space-x-2 sm:space-x-3 lg:space-x-6 max-w-full lg:max-w-5xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                    {/* Professional Avatar */}
-                    <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      message.role === 'user' 
-                        ? 'bg-gradient-to-r from-gray-600 to-gray-800' 
-                        : selectedAgent 
-                          ? `bg-gradient-to-r ${selectedAgent.color}`
-                          : 'bg-gradient-to-r from-gray-600 to-gray-800'
-                    }`}>
-                      {message.role === 'user' ? (
-                        <User className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
-                      ) : selectedAgent ? (
-                        <span className="text-base sm:text-lg lg:text-xl">{selectedAgent.emoji}</span>
-                      ) : (
-                        <Brain className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
-                      )}
-                    </div>
-
-                    {/* Professional Message Content */}
-                    <div className={`flex-1 max-w-full ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                      <div className={`p-3 sm:p-4 lg:p-6 rounded-2xl ${
-                        message.role === 'user'
-                          ? 'bg-gray-800/50 border border-gray-700'
-                          : 'bg-gray-800/30 border border-gray-700'
-                      }`}>
-                        <div className="prose prose-invert max-w-none">
-                          <p className="text-white leading-relaxed whitespace-pre-wrap text-xs sm:text-sm lg:text-base">
-                            {message.content}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Professional Message Actions */}
-                      <div className={`flex items-center space-x-1 sm:space-x-2 lg:space-x-4 mt-2 sm:mt-3 lg:mt-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => copyToClipboard(message.content, message.id)}
-                          className="p-1.5 sm:p-2 rounded-lg bg-gray-800/50 text-gray-400 hover:text-gray-200 transition-all duration-300 border border-gray-700"
-                        >
-                          {copiedId === message.id ? (
-                            <Check className="w-4 h-4" />
-                          ) : (
-                            <Copy className="w-4 h-4" />
-                          )}
-                        </motion.button>
-                        
-                        {/* Reactions */}
-                        {message.reactions && (
-                          <div className="flex items-center space-x-1">
-                            {message.reactions.map((reaction, idx) => (
-                              <motion.button
-                                key={idx}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                className="px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 bg-gray-800/50 rounded-full text-xs hover:bg-gray-700/50 transition-all duration-300 border border-gray-700"
-                              >
-                                {reaction.emoji} {reaction.count}
-                              </motion.button>
-                            ))}
-                          </div>
-                        )}
-                        
-                        <span className="text-xs text-gray-500 text-xs">
-                          {formatTime(message.timestamp)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {/* Professional Loading Indicator */}
-            {isLoading && (
+        {/* Messages */}
+        <div className="space-y-4">
+          <AnimatePresence>
+            {messages.map((message, index) => (
               <motion.div
+                key={message.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex justify-start"
+                transition={{ delay: index * 0.1 }}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className="flex items-start space-x-2 sm:space-x-3 lg:space-x-6">
-                  <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-r ${selectedAgent ? selectedAgent.color : 'from-gray-600 to-gray-800'} rounded-xl flex items-center justify-center`}>
-                    {selectedAgent ? (
-                      <span className="text-base sm:text-lg lg:text-xl">{selectedAgent.emoji}</span>
-                    ) : (
-                                              <Brain className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
-                    )}
+                <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                  <div className={`p-4 rounded-2xl ${
+                    message.role === 'user'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-800 text-white'
+                  }`}>
+                    <p className="text-sm leading-relaxed">{message.content}</p>
                   </div>
-                  <div className="p-3 sm:p-4 lg:p-6 rounded-2xl bg-gray-800/30 border border-gray-700">
-                    <div className="flex items-center space-x-3">
-                      <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-                      <span className="text-gray-400 text-xs sm:text-sm lg:text-base">AI is thinking...</span>
-                    </div>
+                  <div className={`text-xs text-gray-400 mt-2 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
               </motion.div>
-            )}
+            ))}
+          </AnimatePresence>
 
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Professional Input Area */}
-          <div className="p-3 sm:p-4 lg:p-6 border-t border-gray-800 bg-gray-900/95 backdrop-blur-xl">
-            <div className="max-w-full lg:max-w-5xl mx-auto">
-              <div className="flex items-end space-x-2 sm:space-x-3 lg:space-x-4">
-                <div className="flex-1 relative">
-                  <textarea
-                    ref={inputRef}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder={selectedAgent ? `Ask ${selectedAgent.name} anything...` : "Ask me anything - from creative writing to problem-solving, learning, planning, or just having a conversation..."}
-                    className="w-full p-2 sm:p-3 lg:p-4 pr-16 sm:pr-20 lg:pr-24 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-400 resize-none focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500/20 transition-all duration-300 text-xs sm:text-sm"
-                    rows={1}
-                    style={{ minHeight: '50px', maxHeight: '150px' }}
-                  />
-                  <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 text-xs text-gray-500 hidden lg:block">
-                    Enter to send, Shift+Enter for new line
-                  </div>
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isLoading}
-                  className={`p-2 sm:p-3 lg:p-4 rounded-xl text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all duration-300 flex-shrink-0 ${
-                    selectedAgent 
-                      ? `bg-gradient-to-r ${selectedAgent.color} hover:shadow-${selectedAgent.color.split('-')[1]}-500/25`
-                      : 'bg-gradient-to-r from-gray-600 to-gray-800 hover:shadow-gray-500/25'
-                  }`}
-                >
-                  <Send className="w-4 h-4" />
-                </motion.button>
-              </div>
-              
-              {/* Professional Features */}
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4 text-xs lg:text-sm text-gray-400 flex-wrap">
-                  <div className="flex items-center space-x-1 lg:space-x-2">
-                    <Shield className="w-3 h-3 lg:w-4 lg:h-4" />
-                    <span className="hidden sm:inline">Enterprise Security</span>
-                    <span className="sm:hidden">Security</span>
-                  </div>
-                  <div className="flex items-center space-x-1 lg:space-x-2">
-                    <Lock className="w-3 h-3 lg:w-4 lg:h-4" />
-                    <span className="hidden sm:inline">End-to-End Encryption</span>
-                    <span className="sm:hidden">Encrypted</span>
-                  </div>
-                  <div className="flex items-center space-x-1 lg:space-x-2">
-                    <Database className="w-3 h-3 lg:w-4 lg:h-4" />
-                    <span className="hidden sm:inline">SOC 2 Compliant</span>
-                    <span className="sm:hidden">SOC 2</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Futuristic Chat Item Component
-function ChatItem({ 
-  chat, 
-  isActive, 
-  onSelect, 
-  onPin, 
-  onDelete, 
-  collapsed 
-}: { 
-  chat: ChatSession
-  isActive: boolean
-  onSelect: () => void
-  onPin: () => void
-  onDelete: () => void
-  collapsed: boolean
-}) {
-  const [showActions, setShowActions] = useState(false)
-
-  const formatDate = (date: Date) => {
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    
-    if (days === 0) return 'Today'
-    if (days === 1) return 'Yesterday'
-    if (days < 7) return `${days} days ago`
-    return date.toLocaleDateString()
-  }
-
-  if (collapsed) {
-    return (
-      <motion.div
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onSelect}
-        className={`w-8 h-8 rounded-lg cursor-pointer transition-all duration-300 flex items-center justify-center ${
-          isActive
-            ? 'bg-gradient-to-r from-gray-600/50 to-gray-700/50 border border-gray-500/30'
-            : 'hover:bg-gray-800/50'
-        }`}
-      >
-        <MessageSquare className="w-4 h-4 text-gray-400" />
-      </motion.div>
-    )
-  }
-
-  return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-      className={`p-3 rounded-lg cursor-pointer transition-all duration-300 ${
-        isActive
-          ? 'bg-gradient-to-r from-gray-600/50 to-gray-700/50 border border-gray-500/30'
-          : 'hover:bg-gray-800/50'
-      }`}
-      onClick={onSelect}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center space-x-2 mb-1">
-            {chat.isPinned && <Star className="w-3 h-3 text-yellow-400 fill-current" />}
-            <h4 className="text-sm font-medium text-white truncate">{chat.title}</h4>
-          </div>
-          <p className="text-xs text-slate-400">{formatDate(chat.updatedAt)}</p>
-          {chat.tags && (
-            <div className="flex items-center space-x-1 mt-1">
-              {chat.tags.slice(0, 2).map((tag) => (
-                <span key={tag} className="px-1.5 py-0.5 bg-slate-800/50 rounded text-xs text-slate-300 border border-slate-600/50">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        <AnimatePresence>
-          {showActions && (
+          {/* Loading Indicator */}
+          {isLoading && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="flex items-center space-x-1"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex justify-start"
             >
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={(e) => { e.stopPropagation(); onPin(); }}
-                className="p-1 rounded text-slate-400 hover:text-yellow-400 hover:bg-slate-600/50 transition-all duration-300"
-              >
-                <Star className="w-3 h-3" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                className="p-1 rounded text-slate-400 hover:text-red-400 hover:bg-slate-600/50 transition-all duration-300"
-              >
-                <Trash2 className="w-3 h-3" />
-              </motion.button>
+              <div className="max-w-[80%]">
+                <div className="p-4 rounded-2xl bg-gray-800">
+                  <div className="flex items-center space-x-3">
+                    <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                    <span className="text-sm text-gray-400">AI is thinking...</span>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           )}
-        </AnimatePresence>
+
+          <div ref={messagesEndRef} />
+        </div>
       </div>
-    </motion.div>
+
+      {/* Input Area */}
+      <div className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-sm border-t border-gray-800 p-4">
+        <div className="flex items-end space-x-3">
+          <div className="flex-1 relative">
+            <textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask anything"
+              className="w-full p-4 pr-20 bg-gray-800 border border-gray-700 rounded-2xl text-white placeholder-gray-400 resize-none focus:outline-none focus:border-gray-500 transition-all duration-300 text-sm"
+              rows={1}
+              style={{ minHeight: '50px', maxHeight: '120px' }}
+            />
+            
+            {/* Input Icons */}
+            <div className="absolute bottom-3 left-3">
+              <Image className="w-5 h-5 text-gray-400" />
+            </div>
+            
+            <div className="absolute bottom-3 right-3 flex items-center space-x-2">
+              <Mic className="w-5 h-5 text-gray-400" />
+              <div className="flex space-x-1">
+                <div className="w-1 h-3 bg-gray-400 rounded-full"></div>
+                <div className="w-1 h-3 bg-gray-400 rounded-full"></div>
+                <div className="w-1 h-3 bg-gray-400 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleSendMessage}
+            disabled={!inputValue.trim() || isLoading}
+            className="p-4 bg-blue-600 rounded-2xl text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+          >
+            <Send className="w-5 h-5" />
+          </motion.button>
+        </div>
+      </div>
+
+      {/* Bottom Navigation Bar */}
+      <div className="fixed bottom-0 left-0 right-0 h-1 bg-white"></div>
+    </div>
   )
 }
