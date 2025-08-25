@@ -1,0 +1,5 @@
+[33mfcfcd25[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Create mobile-first AI assistant interface - clean modern design with action buttons
+[33m685052a[m Fix mobile text sizing - make text much smaller and properly responsive for mobile screens
+[33mbd2bbfd[m Add debugging for API environment variable issue
+[33me02e3a0[m Fix Vercel API issue - add environment variable guide and CORS headers
+[33m5e9c7d5[m Configure automatic deployments - update vercel.json and add deployment guide
