@@ -6,5 +6,15 @@
   },
   "env": {
     "GEMINI_API_KEY": "@gemini_api_key"
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "autoDeploy": true,
+  "github": {
+    "autoAlias": true,
+    "silent": false
   }
 }
