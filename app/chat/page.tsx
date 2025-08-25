@@ -27,7 +27,9 @@ import {
   Lock,
   Database,
   Sparkles,
-  Zap
+  Zap,
+  Menu,
+  X
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -84,6 +86,7 @@ export default function ChatPage() {
   const [selectedView, setSelectedView] = useState<'chats' | 'agents' | 'analytics'>('chats')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   
   const agents: Agent[] = [
     {
@@ -178,6 +181,27 @@ export default function ChatPage() {
     }
   }, [])
 
+  // Close mobile sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const sidebar = document.getElementById('mobile-sidebar')
+      const menuButton = document.getElementById('mobile-menu-button')
+      
+      if (sidebar && !sidebar.contains(event.target as Node) && 
+          menuButton && !menuButton.contains(event.target as Node)) {
+        setIsMobileSidebarOpen(false)
+      }
+    }
+
+    if (isMobileSidebarOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMobileSidebarOpen])
+
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return
 
@@ -197,6 +221,7 @@ export default function ChatPage() {
     setCurrentSession(updatedSession)
     setInputValue('')
     setIsLoading(true)
+    setIsMobileSidebarOpen(false) // Close mobile sidebar after sending
 
     try {
       const response = await fetch('/api/chat', {
@@ -287,6 +312,7 @@ export default function ChatPage() {
     }
     setCurrentSession(newSession)
     setChatHistory(prev => [newSession, ...prev])
+    setIsMobileSidebarOpen(false) // Close mobile sidebar
   }
 
   const selectAgent = (agent: Agent) => {
@@ -354,16 +380,34 @@ export default function ChatPage() {
       </div>
 
       <div className="flex relative z-10 h-screen">
-                         {/* Professional Sidebar */}
-        <div className={`${sidebarCollapsed ? 'w-16' : 'w-80'} bg-gray-900/95 backdrop-blur-xl border-r border-gray-800 flex flex-col transition-all duration-300 relative z-20`}>
+        {/* Mobile Menu Button */}
+        <div className="lg:hidden fixed top-4 left-4 z-50">
+          <motion.button
+            id="mobile-menu-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            className="p-3 bg-gray-900/95 backdrop-blur-xl border border-gray-800 rounded-lg text-gray-400 hover:text-gray-200 transition-all duration-300"
+          >
+            {isMobileSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </motion.button>
+        </div>
+
+        {/* Sidebar - Hidden on mobile by default */}
+        <div 
+          id="mobile-sidebar"
+          className={`${
+            isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0 lg:relative lg:${sidebarCollapsed ? 'w-16' : 'w-80'} fixed lg:static inset-y-0 left-0 z-40 w-80 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800 flex flex-col transition-all duration-300`}
+        >
           {/* Header */}
           <div className="p-4 border-b border-gray-800">
-                        <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4">
               <Link href="/" className="flex items-center space-x-3 group">
                 <div className="w-8 h-8 bg-gradient-to-r from-gray-700 to-gray-900 rounded-lg flex items-center justify-center group-hover:animate-glow transition-all duration-300 border border-gray-600">
                   <Code className="w-5 h-5 text-gray-300" />
                 </div>
-                {!sidebarCollapsed && (
+                {(!sidebarCollapsed || window.innerWidth < 1024) && (
                   <div className="flex items-center space-x-2">
                     <Sparkles className="w-4 h-4 text-gray-400" />
                     <span className="text-lg font-bold text-gray-200">Beloop AI</span>
@@ -374,13 +418,13 @@ export default function ChatPage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 transition-all duration-300"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 transition-all duration-300 hidden lg:block"
               >
                 {sidebarCollapsed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </motion.button>
             </div>
             
-            {!sidebarCollapsed && (
+            {(!sidebarCollapsed || window.innerWidth < 1024) && (
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -393,8 +437,8 @@ export default function ChatPage() {
             )}
           </div>
 
-                               {/* Search */}
-          {!sidebarCollapsed && (
+          {/* Search */}
+          {(!sidebarCollapsed || window.innerWidth < 1024) && (
             <div className="p-4 border-b border-gray-800">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -410,7 +454,7 @@ export default function ChatPage() {
           )}
 
           {/* Navigation Tabs */}
-          {!sidebarCollapsed && (
+          {(!sidebarCollapsed || window.innerWidth < 1024) && (
             <div className="p-4 border-b border-gray-800">
               <div className="flex space-x-1 bg-gray-800/50 rounded-lg p-1">
                 {[
@@ -451,10 +495,13 @@ export default function ChatPage() {
                           key={chat.id}
                           chat={chat}
                           isActive={currentSession.id === chat.id}
-                          onSelect={() => setCurrentSession(chat)}
+                          onSelect={() => {
+                            setCurrentSession(chat)
+                            setIsMobileSidebarOpen(false)
+                          }}
                           onPin={() => togglePinChat(chat.id)}
                           onDelete={() => deleteChat(chat.id)}
-                          collapsed={sidebarCollapsed}
+                          collapsed={sidebarCollapsed && window.innerWidth >= 1024}
                         />
                       ))}
                     </div>
@@ -471,10 +518,13 @@ export default function ChatPage() {
                           key={chat.id}
                           chat={chat}
                           isActive={currentSession.id === chat.id}
-                          onSelect={() => setCurrentSession(chat)}
+                          onSelect={() => {
+                            setCurrentSession(chat)
+                            setIsMobileSidebarOpen(false)
+                          }}
                           onPin={() => togglePinChat(chat.id)}
                           onDelete={() => deleteChat(chat.id)}
-                          collapsed={sidebarCollapsed}
+                          collapsed={sidebarCollapsed && window.innerWidth >= 1024}
                         />
                       ))}
                     </div>
@@ -483,7 +533,7 @@ export default function ChatPage() {
               </div>
             )}
 
-                        {selectedView === 'agents' && (
+            {selectedView === 'agents' && (
               <div className="p-4 space-y-4">
                 <div className="text-sm text-gray-400 font-medium mb-3 px-2">Available Assistants</div>
                 <div className="space-y-3">
@@ -513,7 +563,7 @@ export default function ChatPage() {
               </div>
             )}
 
-                                     {selectedView === 'analytics' && (
+            {selectedView === 'analytics' && (
               <div className="p-4 space-y-4">
                 <div className="text-sm text-gray-400 font-medium mb-3 px-2">Analytics</div>
                 <div className="space-y-3">
@@ -538,7 +588,7 @@ export default function ChatPage() {
           <div className="p-4 border-t border-gray-800">
             <div className="flex items-center justify-between text-sm text-gray-400">
               <span>Enterprise Plan</span>
-              {!sidebarCollapsed && (
+              {(!sidebarCollapsed || window.innerWidth < 1024) && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -552,33 +602,41 @@ export default function ChatPage() {
           </div>
         </div>
 
+        {/* Mobile Sidebar Overlay */}
+        {isMobileSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+        )}
+
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col lg:ml-0">
           {/* Professional Chat Header */}
           <div className="p-4 border-b border-gray-800 bg-gray-900/95 backdrop-blur-xl">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 bg-gradient-to-r ${selectedAgent ? selectedAgent.color : 'from-gray-600 to-gray-800'} rounded-xl flex items-center justify-center`}>
+              <div className="flex items-center space-x-4 min-w-0 flex-1">
+                <div className="flex items-center space-x-4 min-w-0">
+                  <div className={`w-12 h-12 bg-gradient-to-r ${selectedAgent ? selectedAgent.color : 'from-gray-600 to-gray-800'} rounded-xl flex items-center justify-center flex-shrink-0`}>
                     {selectedAgent ? (
                       <span className="text-2xl">{selectedAgent.emoji}</span>
                     ) : (
                       <Brain className="w-6 h-6 text-white" />
                     )}
                   </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-white mb-1">{currentSession.title}</h1>
-                    <div className="flex items-center space-x-4 text-sm text-gray-400">
+                  <div className="min-w-0 flex-1">
+                    <h1 className="text-xl font-bold text-white mb-1 truncate">{currentSession.title}</h1>
+                    <div className="flex items-center space-x-4 text-sm text-gray-400 flex-wrap">
                       <div className="flex items-center space-x-1">
-                        <MessageSquare className="w-4 h-4" />
+                        <MessageSquare className="w-4 h-4 flex-shrink-0" />
                         <span>{currentSession.messages.length} messages</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Users className="w-4 h-4" />
+                        <Users className="w-4 h-4 flex-shrink-0" />
                         <span>{currentSession.participants?.length || 2} participants</span>
                       </div>
                       {currentSession.tags && (
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 flex-wrap">
                           {currentSession.tags.slice(0, 2).map((tag) => (
                             <span key={tag} className="px-3 py-1 bg-gray-800/50 rounded-full text-xs border border-gray-700">
                               {tag}
@@ -590,7 +648,7 @@ export default function ChatPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-shrink-0">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -617,7 +675,7 @@ export default function ChatPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 lg:space-y-6">
             <AnimatePresence>
               {currentSession.messages.map((message, index) => (
                 <motion.div
@@ -627,9 +685,9 @@ export default function ChatPage() {
                   transition={{ delay: index * 0.1 }}
                   className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`flex items-start space-x-6 max-w-5xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                  <div className={`flex items-start space-x-3 lg:space-x-6 max-w-full lg:max-w-5xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                     {/* Professional Avatar */}
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       message.role === 'user' 
                         ? 'bg-gradient-to-r from-gray-600 to-gray-800' 
                         : selectedAgent 
@@ -637,30 +695,30 @@ export default function ChatPage() {
                           : 'bg-gradient-to-r from-gray-600 to-gray-800'
                     }`}>
                       {message.role === 'user' ? (
-                        <User className="w-6 h-6 text-white" />
+                        <User className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
                       ) : selectedAgent ? (
-                        <span className="text-xl">{selectedAgent.emoji}</span>
+                        <span className="text-lg lg:text-xl">{selectedAgent.emoji}</span>
                       ) : (
-                        <Brain className="w-6 h-6 text-white" />
+                        <Brain className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
                       )}
                     </div>
 
                     {/* Professional Message Content */}
-                    <div className={`flex-1 max-w-4xl ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                      <div className={`p-6 rounded-2xl ${
+                    <div className={`flex-1 max-w-full ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                      <div className={`p-4 lg:p-6 rounded-2xl ${
                         message.role === 'user'
                           ? 'bg-gray-800/50 border border-gray-700'
                           : 'bg-gray-800/30 border border-gray-700'
                       }`}>
                         <div className="prose prose-invert max-w-none">
-                          <p className="text-white leading-relaxed whitespace-pre-wrap text-base">
+                          <p className="text-white leading-relaxed whitespace-pre-wrap text-sm lg:text-base">
                             {message.content}
                           </p>
                         </div>
                       </div>
 
                       {/* Professional Message Actions */}
-                      <div className={`flex items-center space-x-4 mt-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`flex items-center space-x-2 lg:space-x-4 mt-3 lg:mt-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -682,7 +740,7 @@ export default function ChatPage() {
                                 key={idx}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
-                                className="px-3 py-1 bg-gray-800/50 rounded-full text-xs hover:bg-gray-700/50 transition-all duration-300 border border-gray-700"
+                                className="px-2 lg:px-3 py-1 bg-gray-800/50 rounded-full text-xs hover:bg-gray-700/50 transition-all duration-300 border border-gray-700"
                               >
                                 {reaction.emoji} {reaction.count}
                               </motion.button>
@@ -707,18 +765,18 @@ export default function ChatPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex justify-start"
               >
-                <div className="flex items-start space-x-6">
-                  <div className={`w-12 h-12 bg-gradient-to-r ${selectedAgent ? selectedAgent.color : 'from-gray-600 to-gray-800'} rounded-xl flex items-center justify-center`}>
+                <div className="flex items-start space-x-3 lg:space-x-6">
+                  <div className={`w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-r ${selectedAgent ? selectedAgent.color : 'from-gray-600 to-gray-800'} rounded-xl flex items-center justify-center`}>
                     {selectedAgent ? (
-                      <span className="text-xl">{selectedAgent.emoji}</span>
+                      <span className="text-lg lg:text-xl">{selectedAgent.emoji}</span>
                     ) : (
-                      <Brain className="w-6 h-6 text-white" />
+                      <Brain className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
                     )}
                   </div>
-                  <div className="p-6 rounded-2xl bg-gray-800/30 border border-gray-700">
+                  <div className="p-4 lg:p-6 rounded-2xl bg-gray-800/30 border border-gray-700">
                     <div className="flex items-center space-x-3">
                       <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-                      <span className="text-gray-400 text-base">AI is thinking...</span>
+                      <span className="text-gray-400 text-sm lg:text-base">AI is thinking...</span>
                     </div>
                   </div>
                 </div>
@@ -728,54 +786,57 @@ export default function ChatPage() {
             <div ref={messagesEndRef} />
           </div>
 
-                    {/* Professional Input Area */}
-          <div className="p-6 border-t border-gray-800 bg-gray-900/95 backdrop-blur-xl">
-            <div className="max-w-5xl mx-auto">
-              <div className="flex items-end space-x-4">
+          {/* Professional Input Area */}
+          <div className="p-4 lg:p-6 border-t border-gray-800 bg-gray-900/95 backdrop-blur-xl">
+            <div className="max-w-full lg:max-w-5xl mx-auto">
+              <div className="flex items-end space-x-3 lg:space-x-4">
                 <div className="flex-1 relative">
-                                     <textarea
-                     ref={inputRef}
-                     value={inputValue}
-                     onChange={(e) => setInputValue(e.target.value)}
-                     onKeyPress={handleKeyPress}
-                     placeholder={selectedAgent ? `Ask ${selectedAgent.name} anything...` : "Ask me anything - from creative writing to problem-solving, learning, planning, or just having a conversation..."}
-                     className="w-full p-4 pr-24 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-400 resize-none focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500/20 transition-all duration-300 text-sm"
-                     rows={1}
-                     style={{ minHeight: '50px', maxHeight: '150px' }}
-                   />
-                                     <div className="absolute bottom-2 right-2 text-xs text-gray-500">
-                     Enter to send, Shift+Enter for new line
-                   </div>
-                 </div>
-                 <motion.button
-                   whileHover={{ scale: 1.05 }}
-                   whileTap={{ scale: 0.95 }}
-                   onClick={handleSendMessage}
-                   disabled={!inputValue.trim() || isLoading}
-                   className={`p-4 rounded-xl text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all duration-300 ${
-                     selectedAgent 
-                       ? `bg-gradient-to-r ${selectedAgent.color} hover:shadow-${selectedAgent.color.split('-')[1]}-500/25`
-                       : 'bg-gradient-to-r from-gray-600 to-gray-800 hover:shadow-gray-500/25'
-                   }`}
-                 >
-                   <Send className="w-4 h-4" />
-                 </motion.button>
+                  <textarea
+                    ref={inputRef}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={selectedAgent ? `Ask ${selectedAgent.name} anything...` : "Ask me anything - from creative writing to problem-solving, learning, planning, or just having a conversation..."}
+                    className="w-full p-3 lg:p-4 pr-20 lg:pr-24 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-400 resize-none focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500/20 transition-all duration-300 text-sm"
+                    rows={1}
+                    style={{ minHeight: '50px', maxHeight: '150px' }}
+                  />
+                  <div className="absolute bottom-2 right-2 text-xs text-gray-500 hidden lg:block">
+                    Enter to send, Shift+Enter for new line
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSendMessage}
+                  disabled={!inputValue.trim() || isLoading}
+                  className={`p-3 lg:p-4 rounded-xl text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all duration-300 flex-shrink-0 ${
+                    selectedAgent 
+                      ? `bg-gradient-to-r ${selectedAgent.color} hover:shadow-${selectedAgent.color.split('-')[1]}-500/25`
+                      : 'bg-gradient-to-r from-gray-600 to-gray-800 hover:shadow-gray-500/25'
+                  }`}
+                >
+                  <Send className="w-4 h-4" />
+                </motion.button>
               </div>
               
-                             {/* Professional Features */}
-               <div className="mt-4 flex items-center justify-between">
-                 <div className="flex items-center space-x-4 text-sm text-gray-400">
-                  <div className="flex items-center space-x-2">
-                    <Shield className="w-4 h-4" />
-                    <span>Enterprise Security</span>
+              {/* Professional Features */}
+              <div className="mt-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2 lg:space-x-4 text-xs lg:text-sm text-gray-400 flex-wrap">
+                  <div className="flex items-center space-x-1 lg:space-x-2">
+                    <Shield className="w-3 h-3 lg:w-4 lg:h-4" />
+                    <span className="hidden sm:inline">Enterprise Security</span>
+                    <span className="sm:hidden">Security</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Lock className="w-4 h-4" />
-                    <span>End-to-End Encryption</span>
+                  <div className="flex items-center space-x-1 lg:space-x-2">
+                    <Lock className="w-3 h-3 lg:w-4 lg:h-4" />
+                    <span className="hidden sm:inline">End-to-End Encryption</span>
+                    <span className="sm:hidden">Encrypted</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Database className="w-4 h-4" />
-                    <span>SOC 2 Compliant</span>
+                  <div className="flex items-center space-x-1 lg:space-x-2">
+                    <Database className="w-3 h-3 lg:w-4 lg:h-4" />
+                    <span className="hidden sm:inline">SOC 2 Compliant</span>
+                    <span className="sm:hidden">SOC 2</span>
                   </div>
                 </div>
               </div>
