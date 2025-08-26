@@ -303,7 +303,7 @@ export default function Home() {
               <div className="text-center">
                 <div className="text-3xl sm:text-4xl font-bold gradient-text-neon mb-2">500+</div>
                 <div className="text-gray-400 text-sm sm:text-base">Enterprise Clients</div>
-              </div>
+                </div>
               <div className="text-center">
                 <div className="text-3xl sm:text-4xl font-bold gradient-text-neon mb-2">50K+</div>
                 <div className="text-gray-400 text-sm sm:text-base">Active Developers</div>

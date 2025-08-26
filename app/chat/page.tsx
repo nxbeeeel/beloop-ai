@@ -1742,7 +1742,7 @@ const TicTacToeGame = ({ onClose }: { onClose: () => void }) => {
       </div>
       <div className="mt-4 text-center text-sm text-gray-300">
         {!winner && <span>Turn: <span className="font-semibold">{current}</span> {current !== human ? '(Computer)' : '(You)'}</span>}
-        {winner === 'draw' && <span>It’s a draw! 🤝</span>}
+        {winner === 'draw' && <span>It's a draw! 🤝</span>}
         {winner === 'X' && <span>Winner: X {human === 'X' ? '🎉' : '🤖'}</span>}
         {winner === 'O' && <span>Winner: O {human === 'O' ? '🎉' : '🤖'}</span>}
       </div>
@@ -1926,13 +1926,28 @@ function ChatPageContent() {
       }
     } catch (error) {
       console.error('Failed to load messages:', error)
+      // Show welcome message if loading fails
+      setMessages([{
+        id: 'welcome',
+        role: 'assistant',
+        content: `Hello ${session.user?.name || 'there'}! I'm your AI assistant. How can I help you today?`,
+        timestamp: new Date()
+      }])
     }
   }
 
   const startNewChat = () => {
-    // Don't reset messages immediately - let the user start typing
-    setMessages([])
-    setCurrentConversationId(null)
+    // Create a new conversation ID
+    const newConversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    setCurrentConversationId(newConversationId)
+    
+    // Reset messages with welcome message
+    setMessages([{
+      id: 'welcome',
+      role: 'assistant',
+      content: `Hello ${session.user?.name || 'there'}! I'm your AI assistant. How can I help you today?`,
+      timestamp: new Date()
+    }])
     setShowHistory(false)
     
     // Focus on input for immediate interaction
@@ -2026,7 +2041,15 @@ function ChatPageContent() {
       
       // Reload conversations to show the new one
       await loadConversations()
+      
+      // Save to localStorage for immediate persistence
+      const { addMessage } = await import('@/app/lib/chatHistory')
+      if (data.conversationId) {
+        addMessage(session.user.id, data.conversationId, 'user', userMessage.content)
+        addMessage(session.user.id, data.conversationId, 'assistant', data.response)
+      }
     } catch (error) {
+      console.error('Chat error:', error)
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -2566,7 +2589,7 @@ function ChatPageContent() {
                   className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
                 />
                 <GameModal 
-                  title={{
+                  title={activeGame ? {
                     tictactoe: 'Tic‑Tac‑Toe', 
                     number: 'Number Guessing', 
                     memory: 'Memory Game', 
@@ -2574,37 +2597,34 @@ function ChatPageContent() {
                     snake: 'Snake Game',
                     tetris: 'Tetris',
                     pong: 'Pong',
-                    flappy: 'Flappy Bird',
-                    hangman: 'Hangman',
-                    sudoku: 'Sudoku',
-                    wordsearch: 'Word Search',
                     breakout: 'Breakout',
-                    pacman: 'Pac-Man',
+                    flappy: 'Flappy Bird',
+                    '2048': '2048',
+                    sudoku: 'Sudoku',
                     chess: 'Chess',
                     checkers: 'Checkers',
-                    connect4: 'Connect 4',
-                    battleship: 'Battleship',
+                    hangman: 'Hangman',
+                    wordle: 'Wordle',
+                    pacman: 'Pac-Man',
+                    asteroids: 'Asteroids',
+                    spaceinvaders: 'Space Invaders',
+                    bomberman: 'Bomberman',
                     minesweeper: 'Minesweeper',
-                    '2048': '2048',
-                    colorpicker: 'Color Picker',
+                    connect4: 'Connect 4',
+                    solitaire: 'Solitaire',
+                    mahjong: 'Mahjong',
+                    crossword: 'Crossword',
+                    mathquiz: 'Math Quiz',
                     typing: 'Speed Typing',
-                    reaction: 'Reaction Time',
+                    colorblast: 'Color Blast',
+                    jigsaw: 'Jigsaw Puzzle',
                     simon: 'Simon Says',
                     whackamole: 'Whack-a-Mole',
-                    carracing: 'Car Racing',
+                    pinball: 'Pinball',
+                    racing: 'Racing',
                     platformer: 'Platformer',
-                    shooter: 'Space Shooter',
-                    puzzle: 'Sliding Puzzle',
-                    quiz: 'Trivia Quiz',
-                    math: 'Math Challenge',
-                    wordle: 'Wordle',
-                    crossword: 'Crossword',
-                    jigsaw: 'Jigsaw Puzzle',
-                    maze: 'Maze Runner',
-                    tower: 'Tower Defense',
-                    rpg: 'Mini RPG',
-                    arcade: 'Arcade Collection'
-                  }[activeGame] || 'Game'} 
+                    shooter: 'Space Shooter'
+                  }[activeGame] || 'Game' : 'Game'} 
                   onClose={() => setActiveGame(null)}
                   showBackButton={true}
                   onBack={() => setActiveGame(null)}

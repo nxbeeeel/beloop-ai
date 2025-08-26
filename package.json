@@ -7,8 +7,7 @@
     "dev:mobile": "next dev -H 0.0.0.0 -p 3000",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "setup": "node setup-local.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "@auth/core": "^0.34.2",
