@@ -75,7 +75,7 @@ export default function AuthSection({ isMobile = false, onMenuClose }: AuthSecti
   }
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: '/' })
+    window.location.href = '/signout'
     handleMenuClose()
   }
 

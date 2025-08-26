@@ -964,33 +964,29 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
 
   return (
     <GameModal title="🎮 Ultimate Gaming Arcade" onClose={onClose}>
-      <div className="relative p-6 max-w-7xl mx-auto h-full flex flex-col overflow-hidden">
-        {/* Animated Background Emojis */}
+      <div className="relative p-4 sm:p-6 lg:p-8 max-w-8xl mx-auto h-full flex flex-col overflow-hidden">
+        {/* Animated Background Emojis - Reduced for better performance */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Floating Gaming Emojis */}
-          <div className="absolute top-10 left-10 animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }}>🎮</div>
-          <div className="absolute top-20 right-20 animate-pulse" style={{ animationDelay: '1s', animationDuration: '4s' }}>🎯</div>
-          <div className="absolute top-40 left-1/4 animate-bounce" style={{ animationDelay: '2s', animationDuration: '3.5s' }}>🏆</div>
-          <div className="absolute top-60 right-1/3 animate-pulse" style={{ animationDelay: '0.5s', animationDuration: '4.5s' }}>⭐</div>
-          <div className="absolute top-80 left-1/2 animate-bounce" style={{ animationDelay: '1.5s', animationDuration: '3.2s' }}>🎲</div>
-          <div className="absolute top-32 right-1/4 animate-pulse" style={{ animationDelay: '2.5s', animationDuration: '4.2s' }}>🎪</div>
+          {/* Floating Gaming Emojis - Responsive positioning */}
+          <div className="absolute top-8 left-8 sm:top-10 sm:left-10 text-2xl sm:text-3xl animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }}>🎮</div>
+          <div className="absolute top-16 right-16 sm:top-20 sm:right-20 text-2xl sm:text-3xl animate-pulse" style={{ animationDelay: '1s', animationDuration: '4s' }}>🎯</div>
+          <div className="absolute top-32 left-1/4 text-2xl sm:text-3xl animate-bounce" style={{ animationDelay: '2s', animationDuration: '3.5s' }}>🏆</div>
+          <div className="absolute top-48 right-1/3 text-2xl sm:text-3xl animate-pulse" style={{ animationDelay: '0.5s', animationDuration: '4.5s' }}>⭐</div>
           
-          {/* Moving Stars */}
-          <div className="absolute top-16 left-1/3 animate-spin" style={{ animationDelay: '0s', animationDuration: '8s' }}>✨</div>
-          <div className="absolute top-48 right-1/2 animate-spin" style={{ animationDelay: '2s', animationDuration: '10s' }}>💫</div>
-          <div className="absolute top-72 left-2/3 animate-spin" style={{ animationDelay: '4s', animationDuration: '12s' }}>🌟</div>
+          {/* Moving Stars - Responsive */}
+          <div className="absolute top-12 left-1/3 text-xl sm:text-2xl animate-spin" style={{ animationDelay: '0s', animationDuration: '8s' }}>✨</div>
+          <div className="absolute top-36 right-1/2 text-xl sm:text-2xl animate-spin" style={{ animationDelay: '2s', animationDuration: '10s' }}>💫</div>
           
-          {/* Gradient Orbs */}
-          <div className="absolute top-24 left-1/6 w-32 h-32 bg-gradient-to-r from-cyan-500/20 to-pink-500/20 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute top-56 right-1/6 w-24 h-24 bg-gradient-to-r from-purple-500/20 to-yellow-500/20 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-88 left-3/4 w-28 h-28 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          {/* Gradient Orbs - Responsive sizes */}
+          <div className="absolute top-20 left-1/6 w-20 h-20 sm:w-32 sm:h-32 bg-gradient-to-r from-cyan-500/20 to-pink-500/20 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute top-40 right-1/6 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-r from-purple-500/20 to-yellow-500/20 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
 
-        {/* Header with Enhanced Design */}
-        <div className="relative mb-8">
-          <div className="text-center mb-6">
+        {/* Header with Enhanced Design - Better spacing and typography */}
+        <div className="relative mb-6 sm:mb-8 lg:mb-10">
+          <div className="text-center mb-6 sm:mb-8">
             <motion.h1 
-              className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-pink-400 to-purple-400 bg-clip-text text-transparent"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-6 bg-gradient-to-r from-cyan-400 via-pink-400 to-purple-400 bg-clip-text text-transparent leading-tight"
               animate={{ 
                 backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
               }}
@@ -1002,60 +998,60 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
             >
               🎮 ULTIMATE GAMING ARCADE 🎮
             </motion.h1>
-            <p className="text-xl text-gray-300 mb-2">Choose Your Adventure & Level Up!</p>
-            <div className="flex items-center justify-center space-x-4 text-sm text-gray-400">
+            <p className="text-lg sm:text-xl lg:text-2xl text-gray-300 mb-3 sm:mb-4 font-light">Choose Your Adventure & Level Up!</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm sm:text-base text-gray-400">
               <span className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span>Live Gaming</span>
               </span>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <span>🎯 {filteredGames.length} Epic Games</span>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <span>⭐ Premium Experience</span>
             </div>
           </div>
           
-          {/* Enhanced Search Bar */}
-          <div className="relative mb-6">
-            <div className="relative">
+          {/* Enhanced Search Bar - Better responsive design */}
+          <div className="relative mb-6 sm:mb-8">
+            <div className="relative max-w-2xl mx-auto">
               <input
                 type="text"
                 placeholder="🔍 Search for your next adventure..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-5 pl-14 pr-5 bg-gradient-to-r from-gray-800/80 to-gray-900/80 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 transition-all duration-300 backdrop-blur-sm"
+                className="w-full p-4 sm:p-5 pl-12 sm:pl-14 pr-20 sm:pr-24 bg-gradient-to-r from-gray-800/80 to-gray-900/80 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 transition-all duration-300 backdrop-blur-sm text-base sm:text-lg"
               />
-              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-6 h-6 text-cyan-400" />
-              <div className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+              <Search className="absolute left-4 sm:left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
+              <div className="absolute right-4 sm:right-5 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs sm:text-sm">
                 {searchTerm ? `${filteredGames.length} results` : 'Type to search...'}
               </div>
             </div>
           </div>
 
-          {/* Enhanced Category Filter */}
-          <div className="flex flex-wrap justify-center gap-3 mb-6">
+          {/* Enhanced Category Filter - Better responsive layout */}
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
             {categories.map(cat => (
               <motion.button
                 key={cat.key}
                 onClick={() => setSelectedCategory(cat.key)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 transform ${
+                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 transform ${
                   selectedCategory === cat.key
                     ? 'bg-gradient-to-r from-cyan-500 via-pink-500 to-purple-500 text-white shadow-2xl shadow-cyan-400/30 scale-105'
                     : 'bg-gradient-to-r from-gray-800/60 to-gray-700/60 text-gray-300 hover:bg-gradient-to-r hover:from-cyan-600/20 hover:to-pink-600/20 hover:text-white border border-gray-600/50 hover:border-cyan-400/50'
                 } backdrop-blur-sm`}
               >
-                <span className="text-lg mr-2">{cat.name.split(' ')[0]}</span>
-                <span className="bg-white/20 px-2 py-1 rounded-full text-xs">{cat.count}</span>
+                <span className="text-base sm:text-lg mr-1 sm:mr-2">{cat.name.split(' ')[0]}</span>
+                <span className="bg-white/20 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs">{cat.count}</span>
               </motion.button>
             ))}
           </div>
         </div>
 
-        {/* Enhanced Games Grid */}
-        <div className="flex-1 overflow-auto relative">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Enhanced Games Grid - Better responsive layout and spacing */}
+        <div className="flex-1 overflow-auto relative px-2 sm:px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
             {filteredGames.map((game, index) => (
               <motion.button
                 key={game.key}
@@ -1065,42 +1061,41 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.08, y: -8, rotateY: 5 }}
+                whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.95 }}
-                className={`group relative rounded-3xl border-2 transition-all duration-500 overflow-hidden transform perspective-1000 ${
+                className={`group relative rounded-2xl sm:rounded-3xl border-2 transition-all duration-500 overflow-hidden transform ${
                   hoveredGame === game.key
                     ? 'border-cyan-400/60 bg-gradient-to-br from-gray-800/90 via-gray-900/90 to-gray-800/90 shadow-2xl shadow-cyan-400/40 scale-105'
                     : 'border-gray-600/30 bg-gradient-to-br from-gray-900/70 via-gray-800/70 to-gray-900/70 hover:border-cyan-400/40 hover:shadow-xl hover:shadow-cyan-400/20'
-                } backdrop-blur-sm`}
+                } backdrop-blur-sm min-h-[280px] sm:min-h-[320px]`}
               >
-                {/* Animated Background */}
+                {/* Animated Background - Simplified for better performance */}
                 <div className="absolute inset-0">
                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-pink-500/10 to-purple-500/10 animate-pulse"></div>
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-400/20 to-transparent rounded-full -translate-y-12 translate-x-12 animate-pulse"></div>
-                  <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-pink-400/20 to-transparent rounded-full translate-y-10 -translate-x-10 animate-pulse" style={{ animationDelay: '1s' }}></div>
-                  <div className="absolute top-1/2 left-1/2 w-16 h-16 bg-gradient-to-r from-purple-400/20 to-transparent rounded-full -translate-x-8 -translate-y-8 animate-pulse" style={{ animationDelay: '2s' }}></div>
+                  <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-cyan-400/20 to-transparent rounded-full -translate-y-8 translate-x-8 sm:-translate-y-12 sm:translate-x-12 animate-pulse"></div>
+                  <div className="absolute bottom-0 left-0 w-12 h-12 sm:w-20 sm:h-20 bg-gradient-to-tr from-pink-400/20 to-transparent rounded-full translate-y-6 -translate-x-6 sm:translate-y-10 sm:-translate-x-10 animate-pulse" style={{ animationDelay: '1s' }}></div>
                 </div>
 
-                {/* Game Content */}
-                <div className="relative p-6 text-left">
-                  {/* Enhanced Game Icon */}
-                  <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-500 group-hover:rotate-12">
+                {/* Game Content - Better spacing and typography */}
+                <div className="relative p-4 sm:p-6 text-left h-full flex flex-col">
+                  {/* Enhanced Game Icon - Responsive sizing */}
+                  <div className="text-4xl sm:text-5xl lg:text-6xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-500 group-hover:rotate-6">
                     {game.emoji}
                   </div>
                   
-                  {/* Enhanced Game Info */}
-                  <div className="mb-4">
-                    <h3 className="text-white font-bold text-xl mb-2 group-hover:text-cyan-400 transition-colors duration-300">{game.name}</h3>
-                    <p className="text-gray-300 text-sm leading-relaxed">{game.desc}</p>
+                  {/* Enhanced Game Info - Better typography */}
+                  <div className="mb-4 sm:mb-6 flex-1">
+                    <h3 className="text-white font-bold text-lg sm:text-xl lg:text-2xl mb-2 sm:mb-3 group-hover:text-cyan-400 transition-colors duration-300 leading-tight">{game.name}</h3>
+                    <p className="text-gray-300 text-sm sm:text-base leading-relaxed">{game.desc}</p>
                   </div>
 
-                  {/* Enhanced Game Stats */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(game.difficulty)} bg-gray-800/80 backdrop-blur-sm border border-gray-600/50`}>
+                  {/* Enhanced Game Stats - Better responsive layout */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(game.difficulty)} bg-gray-800/80 backdrop-blur-sm border border-gray-600/50`}>
                         {game.difficulty}
                       </span>
-                      <span className="text-gray-300 bg-gray-800/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold border border-gray-600/50">
+                      <span className="text-gray-300 bg-gray-800/80 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border border-gray-600/50">
                         {game.players}
                       </span>
                     </div>
@@ -1111,53 +1106,53 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
                   </div>
 
                   {/* Enhanced Hover Effects */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-pink-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-pink-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl sm:rounded-3xl"></div>
                   
-                  {/* Enhanced Play Button */}
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-110">
-                    <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 via-pink-400 to-purple-400 rounded-full flex items-center justify-center shadow-lg shadow-cyan-400/50 animate-pulse">
-                      <Play className="w-5 h-5 text-white fill-current" />
+                  {/* Enhanced Play Button - Better positioning */}
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-110">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-cyan-400 via-pink-400 to-purple-400 rounded-full flex items-center justify-center shadow-lg shadow-cyan-400/50 animate-pulse">
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5 text-white fill-current" />
                     </div>
                   </div>
 
-                  {/* Sparkle Effects */}
+                  {/* Sparkle Effects - Responsive positioning */}
                   <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <span className="text-yellow-400 animate-spin" style={{ animationDuration: '2s' }}>✨</span>
+                    <span className="text-yellow-400 animate-spin text-sm sm:text-base" style={{ animationDuration: '2s' }}>✨</span>
                   </div>
                   <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ animationDelay: '0.5s' }}>
-                    <span className="text-cyan-400 animate-bounce">💫</span>
+                    <span className="text-cyan-400 animate-bounce text-sm sm:text-base">💫</span>
                   </div>
                 </div>
               </motion.button>
             ))}
           </div>
 
-          {/* Enhanced Empty State */}
+          {/* Enhanced Empty State - Better responsive design */}
           {filteredGames.length === 0 && (
             <motion.div 
-              className="text-center py-16"
+              className="text-center py-12 sm:py-16 lg:py-20"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="text-8xl mb-6 animate-bounce">🎮</div>
-              <h3 className="text-2xl font-bold text-white mb-3 bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent">No Games Found</h3>
-              <p className="text-gray-400 text-lg">Try adjusting your search or category filter</p>
-              <div className="mt-4 flex justify-center space-x-2">
-                <span className="text-2xl animate-pulse">🔍</span>
-                <span className="text-2xl animate-pulse" style={{ animationDelay: '0.5s' }}>🎯</span>
-                <span className="text-2xl animate-pulse" style={{ animationDelay: '1s' }}>✨</span>
+              <div className="text-6xl sm:text-8xl mb-4 sm:mb-6 animate-bounce">🎮</div>
+              <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-3 sm:mb-4 bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent">No Games Found</h3>
+              <p className="text-gray-400 text-base sm:text-lg lg:text-xl">Try adjusting your search or category filter</p>
+              <div className="mt-4 sm:mt-6 flex justify-center space-x-2">
+                <span className="text-xl sm:text-2xl animate-pulse">🔍</span>
+                <span className="text-xl sm:text-2xl animate-pulse" style={{ animationDelay: '0.5s' }}>🎯</span>
+                <span className="text-xl sm:text-2xl animate-pulse" style={{ animationDelay: '1s' }}>✨</span>
               </div>
             </motion.div>
           )}
         </div>
 
-        {/* Enhanced Footer */}
-        <div className="relative mt-8 pt-6 border-t border-gray-700/50">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-6">
+        {/* Enhanced Footer - Better responsive layout */}
+        <div className="relative mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-700/50">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 text-sm sm:text-base">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
               <span className="flex items-center space-x-2 text-cyan-400">
-                <span className="text-lg">🎯</span>
+                <span className="text-base sm:text-lg">🎯</span>
                 <span>{filteredGames.length} Epic Games Available</span>
               </span>
               <span className="flex items-center space-x-2 text-yellow-400">
@@ -1938,7 +1933,7 @@ function ChatPageContent() {
                 <p className="text-xs text-gray-400">{session.user?.email}</p>
               </div>
               <Link 
-                href="/api/auth/signout"
+                href="/signout"
                 className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-300"
                 title="Sign Out"
               >

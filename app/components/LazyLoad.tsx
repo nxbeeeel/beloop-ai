@@ -16,7 +16,6 @@ export default function LazyLoad({ children, fallback }: LazyLoadProps) {
 }
 
 // Lazy load components
-export const LazyFeatures = lazy(() => import('./Features'))
 export const LazyTestimonials = lazy(() => import('./Testimonials'))
 export const LazyPricing = lazy(() => import('./Pricing'))
 export const LazyFooter = lazy(() => import('./Footer'))

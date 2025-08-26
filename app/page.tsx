@@ -10,12 +10,13 @@ import {
   CheckCircle,
   Terminal,
   Cpu,
-  Rocket
+  Rocket,
+  Shield
 } from 'lucide-react'
 import Link from 'next/link'
 import Header from './components/Header'
 import InteractiveElements from './components/InteractiveElements'
-import LazyLoad, { LazyFeatures, LazyTestimonials, LazyPricing, LazyFooter } from './components/LazyLoad'
+import LazyLoad, { LazyTestimonials, LazyPricing, LazyFooter } from './components/LazyLoad'
 
 export default function Home() {
   return (
@@ -140,114 +141,141 @@ export default function Home() {
         />
       </section>
 
-      {/* Trusted By Section */}
-      <section className="py-20 border-t border-gray-800/50">
-        <div className="container mx-auto px-6">
+      {/* Trusted By Section - Enhanced */}
+      <section className="py-24 sm:py-32 border-t border-gray-800/50 relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-1/4 w-64 h-64 bg-gradient-to-r from-cyan-500/10 to-pink-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 relative">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
+            transition={{ duration: 1 }}
+            className="text-center mb-16 sm:mb-20"
           >
-            <p className="text-gray-400 text-sm font-medium mb-12 tracking-wider uppercase">Trusted by the world's most innovative teams</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-12 items-center opacity-60">
-              {['Tesla', 'SpaceX', 'OpenAI', 'Anthropic', 'Meta', 'Google', 'Microsoft'].map((company, index) => (
+            {/* Enhanced Header */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="mb-8"
+            >
+              <div className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-cyan-400/20 to-pink-400/20 border border-cyan-400/30 mb-6">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-3"></div>
+                <span className="text-cyan-400 font-semibold text-sm tracking-wider uppercase">Global Trust</span>
+              </div>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+                Trusted by the World's
+                <br />
+                <span className="gradient-text-neon">Most Innovative Teams</span>
+              </h2>
+              <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                Join thousands of leading companies and developers who trust Beloop AI to power their next breakthrough
+              </p>
+            </motion.div>
+
+            {/* Enhanced Company Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-6 sm:gap-8 lg:gap-12 items-center">
+              {[
+                { name: 'Tesla', logo: '🚗', color: 'from-red-500 to-red-600' },
+                { name: 'SpaceX', logo: '🚀', color: 'from-gray-700 to-gray-800' },
+                { name: 'OpenAI', logo: '🤖', color: 'from-green-500 to-green-600' },
+                { name: 'Anthropic', logo: '🧠', color: 'from-purple-500 to-purple-600' },
+                { name: 'Meta', logo: '📘', color: 'from-blue-500 to-blue-600' },
+                { name: 'Google', logo: '🔍', color: 'from-red-500 to-yellow-500' },
+                { name: 'Microsoft', logo: '🪟', color: 'from-blue-600 to-blue-700' }
+              ].map((company, index) => (
                 <motion.div
-                  key={company}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="text-gray-400 font-bold text-lg hover:text-cyan-400 transition-colors cursor-pointer"
+                  key={company.name}
+                  initial={{ opacity: 0, y: 30, scale: 0.8 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.8, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.1, y: -5 }}
+                  className="group relative"
                 >
-                  {company}
+                  {/* Company Card */}
+                  <div className="relative p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-gray-900/50 to-gray-800/50 border border-gray-700/50 backdrop-blur-sm hover:border-cyan-400/30 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-cyan-400/20">
+                    {/* Company Logo */}
+                    <div className="text-4xl sm:text-5xl mb-4 group-hover:scale-110 transition-transform duration-500">
+                      {company.logo}
+                    </div>
+                    
+                    {/* Company Name */}
+                    <h3 className="text-white font-bold text-lg sm:text-xl mb-2 group-hover:text-cyan-400 transition-colors duration-300">
+                      {company.name}
+                    </h3>
+                    
+                    {/* Status Badge */}
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      <span className="text-green-400 text-xs font-medium">Active Partner</span>
+                    </div>
+
+                    {/* Hover Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                    
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl blur-xl"></div>
+                  </div>
                 </motion.div>
               ))}
             </div>
+
+            {/* Stats Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="mt-16 sm:mt-20 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12"
+            >
+              <div className="text-center">
+                <div className="text-3xl sm:text-4xl font-bold gradient-text-neon mb-2">500+</div>
+                <div className="text-gray-400 text-sm sm:text-base">Enterprise Clients</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl sm:text-4xl font-bold gradient-text-neon mb-2">50K+</div>
+                <div className="text-gray-400 text-sm sm:text-base">Active Developers</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl sm:text-4xl font-bold gradient-text-neon mb-2">99.9%</div>
+                <div className="text-gray-400 text-sm sm:text-base">Uptime SLA</div>
+              </div>
+            </motion.div>
+
+            {/* Trust Indicators */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1 }}
+              className="mt-12 sm:mt-16 flex flex-wrap justify-center items-center gap-6 sm:gap-8 text-gray-400"
+            >
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm font-medium">SOC 2 Certified</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm font-medium">GDPR Compliant</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm font-medium">Enterprise Ready</span>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Features Section - Ultra Modern */}
-      <section className="py-32">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="mb-8">
-                <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-cyan-400/20 to-pink-400/20 border border-cyan-400/30 mb-6">
-                  <Zap className="w-4 h-4 text-cyan-400 mr-2" />
-                  <span className="text-cyan-400 font-medium text-sm">Lightning Fast</span>
-                </div>
-                <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                  Code at the <span className="gradient-text-neon">Speed of Thought</span>
-                </h2>
-              </div>
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                Beloop AI understands your coding patterns, predicts your next move, and generates 
-                entire functions with just a few keystrokes. It's like having a genius programmer 
-                sitting right next to you.
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-pink-400 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="text-gray-300 text-lg">Real-time code completion</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-pink-400 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="text-gray-300 text-lg">Context-aware suggestions</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-pink-400 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="text-gray-300 text-lg">Multi-line predictions</span>
-                </div>
-              </div>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="card group"
-            >
-              <div className="code-block">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                  <div className="ml-4 text-cyan-400 text-sm font-mono">beloop-ai.ts</div>
-                </div>
-                <pre className="text-sm">
-{`// AI predicts your next function
-function createUser(name: string, email: string) {
-  const user = {
-    id: generateId(),
-    name,
-    email,
-    createdAt: new Date(),
-    status: 'active'
-  };
-  
-  return user;
-}
-
-// AI suggests the next line
-const user = createUser('John', 'john@example.com');
-console.log('User created:', user.id);`}
-                </pre>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
 
       {/* AI Intelligence Section */}
       <section className="py-32 border-t border-gray-800/50">
@@ -336,9 +364,7 @@ console.log('User created:', user.id);`}
 
 
 
-              <LazyLoad>
-          <LazyFeatures />
-        </LazyLoad>
+      
         <LazyLoad>
           <LazyPricing />
         </LazyLoad>
