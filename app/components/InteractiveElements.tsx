@@ -18,13 +18,13 @@ export default function InteractiveElements() {
   useEffect(() => {
     setIsClient(true)
     
-    // Generate particles only on client
+    // Generate particles only on client with deterministic initial values
     setParticles([...Array(15)].map((_, i) => ({
       id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 8,
-      duration: 8 + Math.random() * 4
+      left: (i * 7) % 100, // Deterministic positioning
+      top: (i * 13) % 100, // Deterministic positioning
+      delay: (i * 0.5) % 8, // Deterministic delay
+      duration: 8 + (i % 4) // Deterministic duration
     })))
 
     // Mouse tracking
