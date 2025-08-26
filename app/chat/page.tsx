@@ -2910,7 +2910,6 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
 
   const categories = [
     { key: 'all', name: '🎮 All Games', count: 50 },
-    ...(session?.user?.email ? [{ key: 'favorites', name: '⭐ Favorites', count: favorites.length }] : []),
     { key: 'arcade', name: '🕹️ Arcade', count: 12 },
     { key: 'puzzle', name: '🧩 Puzzle', count: 12 },
     { key: 'strategy', name: '♟️ Strategy', count: 8 },
@@ -2918,6 +2917,15 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
     { key: 'educational', name: '📚 Educational', count: 6 },
     { key: 'classic', name: '🏆 Classic', count: 2 }
   ]
+
+  // Add favorites category only if user is logged in
+  const allCategories = session?.user?.email 
+    ? [
+        ...categories.slice(0, 1), // All Games
+        { key: 'favorites', name: '⭐ Favorites', count: favorites.length },
+        ...categories.slice(1) // Rest of categories
+      ]
+    : categories
 
   const games = [
     { key: 'tictactoe', name: 'Tic‑Tac‑Toe', emoji: '❌⭕', desc: 'Play vs computer', category: 'classic', difficulty: 'Easy', players: '1-2', rating: 4.5 },
@@ -3072,7 +3080,7 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
 
           {/* Compact Category Filter */}
           <div className="flex flex-wrap gap-2">
-            {categories.map(cat => (
+            {allCategories.map(cat => (
               <button
                 key={cat.key}
                 onClick={() => setSelectedCategory(cat.key)}
@@ -3520,19 +3528,35 @@ function ChatPageContent() {
     )
   }
 
-  // Don't render if not authenticated
-  if (!session) {
-    return null
-  }
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isClient, setIsClient] = useState(false)
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: `Hello ${session.user?.name || 'there'}! I'm your AI assistant. How can I help you today?`,
-      timestamp: new Date()
+  // Initialize messages after client-side hydration
+  useEffect(() => {
+    setIsClient(true)
+    if (session?.user?.name) {
+      setMessages([
+        {
+          id: '1',
+          role: 'assistant',
+          content: `Hello ${session.user.name}! I'm your AI assistant. How can I help you today?`,
+          timestamp: new Date()
+        }
+      ])
     }
-  ])
+  }, [session?.user?.name])
+
+  // Don't render if not authenticated or not hydrated
+  if (!session || !isClient) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
   
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
