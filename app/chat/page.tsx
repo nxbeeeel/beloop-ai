@@ -1354,18 +1354,918 @@ const Game2048 = ({ onClose }: { onClose: () => void }) => {
   )
 }
 
+// Hangman Game
+const HangmanGame = ({ onClose }: { onClose: () => void }) => {
+  const words = ['JAVASCRIPT', 'REACT', 'PYTHON', 'TYPESCRIPT', 'NEXTJS', 'TAILWIND', 'FRAMER', 'MOTION', 'GAMING', 'DEVELOPER']
+  const [word, setWord] = useState(words[Math.floor(Math.random() * words.length)])
+  const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set())
+  const [wrongGuesses, setWrongGuesses] = useState(0)
+  const [gameOver, setGameOver] = useState(false)
+  const [won, setWon] = useState(false)
+
+  const maxWrongGuesses = 6
+  const displayWord = word.split('').map(letter => 
+    guessedLetters.has(letter) ? letter : '_'
+  ).join(' ')
+
+  const handleGuess = (letter: string) => {
+    if (gameOver || guessedLetters.has(letter)) return
+
+    const newGuessedLetters = new Set(guessedLetters)
+    newGuessedLetters.add(letter)
+    setGuessedLetters(newGuessedLetters)
+
+    if (!word.includes(letter)) {
+      setWrongGuesses(wrongGuesses + 1)
+    }
+
+    // Check win condition
+    const isWon = word.split('').every(letter => newGuessedLetters.has(letter))
+    if (isWon) {
+      setWon(true)
+      setGameOver(true)
+    }
+
+    // Check lose condition
+    if (wrongGuesses + 1 >= maxWrongGuesses) {
+      setGameOver(true)
+    }
+  }
+
+  const resetGame = () => {
+    setWord(words[Math.floor(Math.random() * words.length)])
+    setGuessedLetters(new Set())
+    setWrongGuesses(0)
+    setGameOver(false)
+    setWon(false)
+  }
+
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">🪢 Hangman</h2>
+        <div className="text-6xl font-mono text-cyan-400 mb-4 tracking-wider">{displayWord}</div>
+        <div className="text-lg text-gray-300 mb-4">
+          Wrong guesses: {wrongGuesses}/{maxWrongGuesses}
+        </div>
+        
+        {/* Hangman drawing */}
+        <div className="w-32 h-32 mx-auto mb-6 border-2 border-gray-600 rounded-lg flex items-center justify-center">
+          <div className="text-4xl text-red-400">
+            {wrongGuesses >= 1 && '😵'}
+            {wrongGuesses === 0 && '😊'}
+          </div>
+        </div>
+      </div>
+
+      {gameOver ? (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">
+            {won ? '🎉 You Won!' : '💀 Game Over!'}
+          </div>
+          <div className="text-lg text-gray-300 mb-6">
+            The word was: <span className="text-cyan-400 font-bold">{word}</span>
+          </div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={resetGame}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              Play Again
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-7 gap-2 max-w-md">
+          {alphabet.map(letter => (
+            <motion.button
+              key={letter}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => handleGuess(letter)}
+              disabled={guessedLetters.has(letter)}
+              className={`w-10 h-10 rounded-lg font-bold text-lg transition-all duration-200 ${
+                guessedLetters.has(letter)
+                  ? word.includes(letter)
+                    ? 'bg-green-500 text-white'
+                    : 'bg-red-500 text-white'
+                  : 'bg-gray-700 text-white hover:bg-cyan-500'
+              }`}
+            >
+              {letter}
+            </motion.button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Math Quiz Game
+const MathQuizGame = ({ onClose }: { onClose: () => void }) => {
+  const [score, setScore] = useState(0)
+  const [question, setQuestion] = useState('')
+  const [answer, setAnswer] = useState('')
+  const [userAnswer, setUserAnswer] = useState('')
+  const [feedback, setFeedback] = useState('')
+  const [timeLeft, setTimeLeft] = useState(30)
+  const [gameOver, setGameOver] = useState(false)
+
+  const generateQuestion = () => {
+    const operations = ['+', '-', '*']
+    const operation = operations[Math.floor(Math.random() * operations.length)]
+    let num1, num2, result
+
+    switch (operation) {
+      case '+':
+        num1 = Math.floor(Math.random() * 50) + 1
+        num2 = Math.floor(Math.random() * 50) + 1
+        result = num1 + num2
+        break
+      case '-':
+        num1 = Math.floor(Math.random() * 50) + 25
+        num2 = Math.floor(Math.random() * num1) + 1
+        result = num1 - num2
+        break
+      case '*':
+        num1 = Math.floor(Math.random() * 12) + 1
+        num2 = Math.floor(Math.random() * 12) + 1
+        result = num1 * num2
+        break
+      default:
+        num1 = num2 = result = 0
+    }
+
+    setQuestion(`${num1} ${operation} ${num2} = ?`)
+    setAnswer(result.toString())
+    setUserAnswer('')
+    setFeedback('')
+  }
+
+  useEffect(() => {
+    generateQuestion()
+  }, [])
+
+  useEffect(() => {
+    if (timeLeft > 0 && !gameOver) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000)
+      return () => clearTimeout(timer)
+    } else if (timeLeft === 0) {
+      setGameOver(true)
+    }
+  }, [timeLeft, gameOver])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (userAnswer === answer) {
+      setScore(score + 10)
+      setFeedback('✅ Correct! +10 points')
+    } else {
+      setFeedback(`❌ Wrong! The answer was ${answer}`)
+    }
+    setTimeout(() => {
+      generateQuestion()
+    }, 1000)
+  }
+
+  const resetGame = () => {
+    setScore(0)
+    setTimeLeft(30)
+    setGameOver(false)
+    generateQuestion()
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">🧮 Math Quiz</h2>
+        <div className="text-lg text-gray-300 mb-4">
+          Score: <span className="text-cyan-400 font-bold">{score}</span> | 
+          Time: <span className="text-yellow-400 font-bold">{timeLeft}s</span>
+        </div>
+      </div>
+
+      {gameOver ? (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">🎯 Game Over!</div>
+          <div className="text-lg text-gray-300 mb-6">
+            Final Score: <span className="text-cyan-400 font-bold">{score}</span>
+          </div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={resetGame}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              Play Again
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="text-4xl font-bold text-white mb-4">{question}</div>
+            <div className="text-lg text-gray-300">{feedback}</div>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="number"
+              value={userAnswer}
+              onChange={(e) => setUserAnswer(e.target.value)}
+              className="w-full p-4 text-center text-2xl font-bold bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-cyan-400"
+              placeholder="Enter answer..."
+              autoFocus
+            />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="submit"
+              className="w-full p-4 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold text-lg"
+            >
+              Submit Answer
+            </motion.button>
+          </form>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Whack-a-Mole Game
+const WhackAMoleGame = ({ onClose }: { onClose: () => void }) => {
+  const [score, setScore] = useState(0)
+  const [timeLeft, setTimeLeft] = useState(30)
+  const [gameOver, setGameOver] = useState(false)
+  const [activeMole, setActiveMole] = useState<number | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  const startGame = () => {
+    setIsPlaying(true)
+    setScore(0)
+    setTimeLeft(30)
+    setGameOver(false)
+    setActiveMole(null)
+    
+    const gameTimer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(gameTimer)
+          setGameOver(true)
+          setIsPlaying(false)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    const moleTimer = setInterval(() => {
+      if (!gameOver) {
+        setActiveMole(Math.floor(Math.random() * 9))
+        setTimeout(() => setActiveMole(null), 1000)
+      } else {
+        clearInterval(moleTimer)
+      }
+    }, 1500)
+  }
+
+  const whackMole = (index: number) => {
+    if (activeMole === index && isPlaying) {
+      setScore(score + 10)
+      setActiveMole(null)
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">🔨 Whack-a-Mole</h2>
+        <div className="text-lg text-gray-300 mb-4">
+          Score: <span className="text-cyan-400 font-bold">{score}</span> | 
+          Time: <span className="text-yellow-400 font-bold">{timeLeft}s</span>
+        </div>
+      </div>
+
+      {!isPlaying && !gameOver ? (
+        <div className="text-center">
+          <div className="text-lg text-gray-300 mb-6">
+            Click the moles as fast as you can!
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={startGame}
+            className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold text-lg"
+          >
+            Start Game
+          </motion.button>
+        </div>
+      ) : gameOver ? (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">🎯 Game Over!</div>
+          <div className="text-lg text-gray-300 mb-6">
+            Final Score: <span className="text-cyan-400 font-bold">{score}</span>
+          </div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={startGame}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              Play Again
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-4 w-full max-w-md">
+          {[...Array(9)].map((_, index) => (
+            <motion.button
+              key={index}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => whackMole(index)}
+              className={`w-20 h-20 rounded-xl border-2 transition-all duration-200 ${
+                activeMole === index
+                  ? 'bg-yellow-500 border-yellow-400 shadow-lg shadow-yellow-400/50'
+                  : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+              }`}
+            >
+              {activeMole === index ? '🦫' : ''}
+            </motion.button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Circuit Racing Game
+const RacingGame = ({ onClose }: { onClose: () => void }) => {
+  const [playerPosition, setPlayerPosition] = useState(50)
+  const [score, setScore] = useState(0)
+  const [gameOver, setGameOver] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [obstacles, setObstacles] = useState<Array<{id: number, x: number, y: number}>>([])
+  const [speed, setSpeed] = useState(2)
+
+  const startGame = () => {
+    setIsPlaying(true)
+    setScore(0)
+    setGameOver(false)
+    setPlayerPosition(50)
+    setObstacles([])
+    setSpeed(2)
+  }
+
+  useEffect(() => {
+    if (!isPlaying || gameOver) return
+
+    const gameLoop = setInterval(() => {
+      setScore(prev => prev + 1)
+      
+      // Move obstacles
+      setObstacles(prev => 
+        prev.map(obs => ({ ...obs, y: obs.y + speed }))
+          .filter(obs => obs.y < 100)
+      )
+
+      // Generate new obstacles
+      if (Math.random() < 0.1) {
+        setObstacles(prev => [...prev, {
+          id: Date.now(),
+          x: Math.random() * 80 + 10,
+          y: -10
+        }])
+      }
+
+      // Check collisions
+      obstacles.forEach(obs => {
+        if (obs.y > 70 && obs.y < 90 && Math.abs(obs.x - playerPosition) < 10) {
+          setGameOver(true)
+          setIsPlaying(false)
+        }
+      })
+
+      // Increase speed
+      if (score % 100 === 0) {
+        setSpeed(prev => prev + 0.5)
+      }
+    }, 50)
+
+    return () => clearInterval(gameLoop)
+  }, [isPlaying, gameOver, obstacles, playerPosition, score, speed])
+
+  const handleKeyPress = (e: KeyboardEvent) => {
+    if (!isPlaying) return
+    
+    if (e.key === 'ArrowLeft' && playerPosition > 10) {
+      setPlayerPosition(prev => prev - 5)
+    }
+    if (e.key === 'ArrowRight' && playerPosition < 90) {
+      setPlayerPosition(prev => prev + 5)
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [isPlaying])
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">🏎️ Circuit Racing</h2>
+        <div className="text-lg text-gray-300 mb-4">
+          Score: <span className="text-cyan-400 font-bold">{score}</span> | 
+          Speed: <span className="text-yellow-400 font-bold">{speed.toFixed(1)}x</span>
+        </div>
+      </div>
+
+      {!isPlaying && !gameOver ? (
+        <div className="text-center">
+          <div className="text-lg text-gray-300 mb-6">
+            Use ← → arrow keys to dodge obstacles!
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={startGame}
+            className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold text-lg"
+          >
+            Start Race
+          </motion.button>
+        </div>
+      ) : gameOver ? (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">💥 Crash!</div>
+          <div className="text-lg text-gray-300 mb-6">
+            Final Score: <span className="text-cyan-400 font-bold">{score}</span>
+          </div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={startGame}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              Race Again
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="relative w-full max-w-md h-64 bg-gray-800 rounded-xl border-2 border-gray-600 overflow-hidden">
+          {/* Road */}
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-700 to-gray-900">
+            {/* Road lines */}
+            <div className="absolute left-1/2 top-0 w-1 h-full bg-yellow-400 transform -translate-x-1/2"></div>
+          </div>
+          
+          {/* Player car */}
+          <div 
+            className="absolute bottom-4 w-8 h-12 bg-red-500 rounded-lg transform -translate-x-1/2"
+            style={{ left: `${playerPosition}%` }}
+          >
+            <div className="w-full h-2 bg-red-600 rounded-t-lg"></div>
+            <div className="w-2 h-2 bg-yellow-400 rounded-full absolute top-1 left-1"></div>
+            <div className="w-2 h-2 bg-yellow-400 rounded-full absolute top-1 right-1"></div>
+          </div>
+
+          {/* Obstacles */}
+          {obstacles.map(obs => (
+            <div
+              key={obs.id}
+              className="absolute w-6 h-8 bg-blue-500 rounded-lg transform -translate-x-1/2"
+              style={{ left: `${obs.x}%`, top: `${obs.y}%` }}
+            >
+              <div className="w-full h-1 bg-blue-600 rounded-t-lg"></div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Drag Racing Game
+const DragRacingGame = ({ onClose }: { onClose: () => void }) => {
+  const [playerSpeed, setPlayerSpeed] = useState(0)
+  const [playerDistance, setPlayerDistance] = useState(0)
+  const [opponentSpeed, setOpponentSpeed] = useState(0)
+  const [opponentDistance, setOpponentDistance] = useState(0)
+  const [gameState, setGameState] = useState<'waiting' | 'countdown' | 'racing' | 'finished'>('waiting')
+  const [countdown, setCountdown] = useState(3)
+  const [winner, setWinner] = useState<'player' | 'opponent' | null>(null)
+  const [reactionTime, setReactionTime] = useState<number | null>(null)
+  const [startTime, setStartTime] = useState<number | null>(null)
+
+  const startRace = () => {
+    setGameState('countdown')
+    setCountdown(3)
+    setPlayerSpeed(0)
+    setPlayerDistance(0)
+    setOpponentSpeed(0)
+    setOpponentDistance(0)
+    setWinner(null)
+    setReactionTime(null)
+    setStartTime(null)
+  }
+
+  useEffect(() => {
+    if (gameState === 'countdown') {
+      const timer = setTimeout(() => {
+        if (countdown > 1) {
+          setCountdown(countdown - 1)
+        } else {
+          setGameState('racing')
+          setStartTime(Date.now())
+        }
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [countdown, gameState])
+
+  useEffect(() => {
+    if (gameState === 'racing') {
+      const raceInterval = setInterval(() => {
+        // Player acceleration
+        if (playerSpeed < 200) {
+          setPlayerSpeed(prev => prev + 5)
+        }
+        setPlayerDistance(prev => prev + playerSpeed / 100)
+
+        // Opponent AI
+        if (opponentSpeed < 180) {
+          setOpponentSpeed(prev => prev + 4)
+        }
+        setOpponentDistance(prev => prev + opponentSpeed / 100)
+
+        // Check finish line (quarter mile = 400 units)
+        if (playerDistance >= 400 || opponentDistance >= 400) {
+          setGameState('finished')
+          if (playerDistance >= 400 && opponentDistance < 400) {
+            setWinner('player')
+          } else if (opponentDistance >= 400 && playerDistance < 400) {
+            setWinner('opponent')
+          } else {
+            setWinner('player') // Tie goes to player
+          }
+        }
+      }, 50)
+
+      return () => clearInterval(raceInterval)
+    }
+  }, [gameState, playerSpeed, playerDistance, opponentSpeed, opponentDistance])
+
+  const handleStart = () => {
+    if (gameState === 'racing' && !reactionTime) {
+      setReactionTime(Date.now() - (startTime || 0))
+    }
+  }
+
+  useEffect(() => {
+    if (gameState === 'racing') {
+      window.addEventListener('keydown', handleStart)
+      return () => window.removeEventListener('keydown', handleStart)
+    }
+  }, [gameState, reactionTime, startTime])
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">🏁 Drag Racing</h2>
+        <div className="text-lg text-gray-300 mb-4">
+          Press any key when lights turn green!
+        </div>
+      </div>
+
+      {gameState === 'waiting' ? (
+        <div className="text-center">
+          <div className="text-lg text-gray-300 mb-6">
+            Quarter mile sprint - fastest reaction wins!
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={startRace}
+            className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold text-lg"
+          >
+            Start Race
+          </motion.button>
+        </div>
+      ) : gameState === 'countdown' ? (
+        <div className="text-center">
+          <div className="text-6xl font-bold text-yellow-400 mb-4">{countdown}</div>
+          <div className="text-lg text-gray-300">Get ready...</div>
+        </div>
+      ) : gameState === 'racing' ? (
+        <div className="w-full max-w-md">
+          <div className="text-center mb-4">
+            <div className="text-2xl font-bold text-green-400 mb-2">GO!</div>
+            {reactionTime && (
+              <div className="text-lg text-gray-300">
+                Reaction: <span className="text-cyan-400">{(reactionTime / 1000).toFixed(3)}s</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="space-y-4">
+            {/* Player lane */}
+            <div className="bg-gray-700 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-white font-bold">You</span>
+                <span className="text-cyan-400">{playerSpeed.toFixed(0)} mph</span>
+              </div>
+              <div className="w-full bg-gray-600 rounded-full h-4">
+                <div 
+                  className="bg-red-500 h-4 rounded-full transition-all duration-100"
+                  style={{ width: `${(playerDistance / 400) * 100}%` }}
+                ></div>
+              </div>
+              <div className="text-right text-sm text-gray-400 mt-1">
+                {playerDistance.toFixed(0)} / 400m
+              </div>
+            </div>
+
+            {/* Opponent lane */}
+            <div className="bg-gray-700 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-white font-bold">Opponent</span>
+                <span className="text-cyan-400">{opponentSpeed.toFixed(0)} mph</span>
+              </div>
+              <div className="w-full bg-gray-600 rounded-full h-4">
+                <div 
+                  className="bg-blue-500 h-4 rounded-full transition-all duration-100"
+                  style={{ width: `${(opponentDistance / 400) * 100}%` }}
+                ></div>
+              </div>
+              <div className="text-right text-sm text-gray-400 mt-1">
+                {opponentDistance.toFixed(0)} / 400m
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">
+            {winner === 'player' ? '🏆 You Won!' : '💥 You Lost!'}
+          </div>
+          <div className="text-lg text-gray-300 mb-6">
+            {reactionTime && (
+              <div>Reaction Time: <span className="text-cyan-400">{(reactionTime / 1000).toFixed(3)}s</span></div>
+            )}
+          </div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={startRace}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              Race Again
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Off-Road Racing Game
+const OffRoadRacingGame = ({ onClose }: { onClose: () => void }) => {
+  const [playerPosition, setPlayerPosition] = useState(50)
+  const [score, setScore] = useState(0)
+  const [gameOver, setGameOver] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [obstacles, setObstacles] = useState<Array<{id: number, x: number, y: number, type: 'rock' | 'mud' | 'water'}>>([])
+  const [speed, setSpeed] = useState(1.5)
+
+  const startGame = () => {
+    setIsPlaying(true)
+    setScore(0)
+    setGameOver(false)
+    setPlayerPosition(50)
+    setObstacles([])
+    setSpeed(1.5)
+  }
+
+  useEffect(() => {
+    if (!isPlaying || gameOver) return
+
+    const gameLoop = setInterval(() => {
+      setScore(prev => prev + 1)
+      
+      // Move obstacles
+      setObstacles(prev => 
+        prev.map(obs => ({ ...obs, y: obs.y + speed }))
+          .filter(obs => obs.y < 100)
+      )
+
+      // Generate new obstacles
+      if (Math.random() < 0.15) {
+        const types: Array<'rock' | 'mud' | 'water'> = ['rock', 'mud', 'water']
+        const type = types[Math.floor(Math.random() * types.length)]
+        setObstacles(prev => [...prev, {
+          id: Date.now(),
+          x: Math.random() * 80 + 10,
+          y: -10,
+          type
+        }])
+      }
+
+      // Check collisions
+      obstacles.forEach(obs => {
+        if (obs.y > 70 && obs.y < 90 && Math.abs(obs.x - playerPosition) < 8) {
+          if (obs.type === 'rock') {
+            setGameOver(true)
+            setIsPlaying(false)
+          } else if (obs.type === 'mud') {
+            setSpeed(prev => Math.max(0.5, prev - 0.2))
+          } else if (obs.type === 'water') {
+            setSpeed(prev => Math.max(0.3, prev - 0.3))
+          }
+        }
+      })
+
+      // Recover speed
+      if (score % 50 === 0) {
+        setSpeed(prev => Math.min(3, prev + 0.1))
+      }
+    }, 50)
+
+    return () => clearInterval(gameLoop)
+  }, [isPlaying, gameOver, obstacles, playerPosition, score, speed])
+
+  const handleKeyPress = (e: KeyboardEvent) => {
+    if (!isPlaying) return
+    
+    if (e.key === 'ArrowLeft' && playerPosition > 10) {
+      setPlayerPosition(prev => prev - 4)
+    }
+    if (e.key === 'ArrowRight' && playerPosition < 90) {
+      setPlayerPosition(prev => prev + 4)
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [isPlaying])
+
+  const getObstacleEmoji = (type: 'rock' | 'mud' | 'water') => {
+    switch (type) {
+      case 'rock': return '🪨'
+      case 'mud': return '🌊'
+      case 'water': return '💧'
+      default: return '🪨'
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">🚙 Off-Road Racing</h2>
+        <div className="text-lg text-gray-300 mb-4">
+          Score: <span className="text-cyan-400 font-bold">{score}</span> | 
+          Speed: <span className="text-yellow-400 font-bold">{speed.toFixed(1)}x</span>
+        </div>
+      </div>
+
+      {!isPlaying && !gameOver ? (
+        <div className="text-center">
+          <div className="text-lg text-gray-300 mb-6">
+            Avoid rocks! Mud and water slow you down!
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={startGame}
+            className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold text-lg"
+          >
+            Start Adventure
+          </motion.button>
+        </div>
+      ) : gameOver ? (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">💥 Crashed!</div>
+          <div className="text-lg text-gray-300 mb-6">
+            Final Score: <span className="text-cyan-400 font-bold">{score}</span>
+          </div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={startGame}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              Try Again
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="relative w-full max-w-md h-64 bg-gradient-to-b from-green-800 to-brown-800 rounded-xl border-2 border-gray-600 overflow-hidden">
+          {/* Terrain */}
+          <div className="absolute inset-0 bg-gradient-to-b from-green-700 to-brown-700">
+            {/* Terrain details */}
+            <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-green-600 rounded-full"></div>
+            <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-brown-600 rounded-full"></div>
+          </div>
+          
+          {/* Player vehicle */}
+          <div 
+            className="absolute bottom-4 w-10 h-8 bg-orange-500 rounded-lg transform -translate-x-1/2"
+            style={{ left: `${playerPosition}%` }}
+          >
+            <div className="w-full h-1 bg-orange-600 rounded-t-lg"></div>
+            <div className="w-3 h-3 bg-black rounded-full absolute -bottom-1 left-1"></div>
+            <div className="w-3 h-3 bg-black rounded-full absolute -bottom-1 right-1"></div>
+          </div>
+
+          {/* Obstacles */}
+          {obstacles.map(obs => (
+            <div
+              key={obs.id}
+              className="absolute w-6 h-6 transform -translate-x-1/2 flex items-center justify-center text-lg"
+              style={{ left: `${obs.x}%`, top: `${obs.y}%` }}
+            >
+              {getObstacleEmoji(obs.type)}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Game Library selector
 const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, onClose: () => void }) => {
+  const { data: session } = useSession()
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [hoveredGame, setHoveredGame] = useState<string | null>(null)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [favoritesLoading, setFavoritesLoading] = useState(true)
 
   const categories = [
-    { key: 'all', name: '🎮 All Games', count: 30 },
+    { key: 'all', name: '🎮 All Games', count: 33 },
+    { key: 'favorites', name: '⭐ Favorites', count: favorites.length },
     { key: 'arcade', name: '🕹️ Arcade', count: 8 },
     { key: 'puzzle', name: '🧩 Puzzle', count: 6 },
     { key: 'strategy', name: '♟️ Strategy', count: 4 },
-    { key: 'action', name: '⚡ Action', count: 5 },
+    { key: 'action', name: '⚡ Action', count: 8 },
     { key: 'educational', name: '📚 Educational', count: 4 },
     { key: 'classic', name: '🏆 Classic', count: 3 }
   ]
@@ -1402,17 +2302,77 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
     { key: 'simon', name: 'Simon Says', emoji: '🎵', desc: 'Memory sequence', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.2 },
     { key: 'whackamole', name: 'Whack-a-Mole', emoji: '🔨', desc: 'Quick reflexes', category: 'action', difficulty: 'Easy', players: '1', rating: 4.0 },
     { key: 'pinball', name: 'Pinball', emoji: '🎰', desc: 'Bounce the ball', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.3 },
-    { key: 'racing', name: 'Racing', emoji: '🏎️', desc: 'Speed challenge', category: 'action', difficulty: 'Medium', players: '1', rating: 4.5 },
+    { key: 'racing', name: 'Circuit Racing', emoji: '🏎️', desc: 'Speed challenge', category: 'action', difficulty: 'Medium', players: '1', rating: 4.5 },
+    { key: 'dragracing', name: 'Drag Racing', emoji: '🏁', desc: 'Quarter mile sprint', category: 'action', difficulty: 'Easy', players: '1', rating: 4.3 },
+    { key: 'offroad', name: 'Off-Road Racing', emoji: '🚙', desc: 'Mud and terrain', category: 'action', difficulty: 'Hard', players: '1', rating: 4.4 },
     { key: 'platformer', name: 'Platformer', emoji: '🏃', desc: 'Jump and run', category: 'action', difficulty: 'Hard', players: '1', rating: 4.4 },
     { key: 'shooter', name: 'Shooter', emoji: '🎯', desc: 'Target practice', category: 'action', difficulty: 'Medium', players: '1', rating: 4.2 },
   ]
 
   const filteredGames = games.filter(game => {
-    const matchesCategory = selectedCategory === 'all' || game.category === selectedCategory
+    let matchesCategory = selectedCategory === 'all' || game.category === selectedCategory
+    
+    // Handle favorites category
+    if (selectedCategory === 'favorites') {
+      matchesCategory = favorites.includes(game.key)
+    }
+    
     const matchesSearch = game.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          game.desc.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesCategory && matchesSearch
   })
+
+  // Fetch favorites on component mount
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!session?.user?.email) {
+        setFavoritesLoading(false)
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/favorites?userId=${session.user.email}`)
+        if (response.ok) {
+          const data = await response.json()
+          setFavorites(data.favorites || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch favorites:', error)
+      } finally {
+        setFavoritesLoading(false)
+      }
+    }
+
+    fetchFavorites()
+  }, [session?.user?.email])
+
+  const toggleFavorite = async (gameKey: string, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent game selection when clicking favorite button
+    if (!session?.user?.email) return
+
+    try {
+      const isFavorite = favorites.includes(gameKey)
+      const method = isFavorite ? 'DELETE' : 'POST'
+      
+      const response = await fetch('/api/favorites', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: session.user.email,
+          gameKey
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setFavorites(data.favorites)
+      }
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error)
+    }
+  }
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -1485,9 +2445,28 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
                     : 'border-gray-600/30 bg-gray-800/30 hover:border-cyan-400/40 hover:bg-gray-800/50'
                 }`}
               >
-                {/* Game Icon */}
-                <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
-                  {game.emoji}
+                {/* Game Icon and Favorite Button */}
+                <div className="relative">
+                  <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
+                    {game.emoji}
+                  </div>
+                  
+                  {/* Favorite Button */}
+                  {session?.user?.email && (
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={(e) => toggleFavorite(game.key, e)}
+                      className={`absolute -top-1 -right-1 p-1 rounded-full transition-all duration-300 ${
+                        favorites.includes(game.key)
+                          ? 'text-yellow-400 bg-yellow-400/20'
+                          : 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/20'
+                      }`}
+                      title={favorites.includes(game.key) ? 'Remove from favorites' : 'Add to favorites'}
+                    >
+                      <Star className={`w-3 h-3 ${favorites.includes(game.key) ? 'fill-current' : ''}`} />
+                    </motion.button>
+                  )}
                 </div>
                 
                 {/* Game Name */}
@@ -1878,7 +2857,7 @@ function ChatPageContent() {
     title: string
   } | null>(null)
   const [showGameLauncher, setShowGameLauncher] = useState(false)
-  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps' | 'snake' | 'tetris' | 'pong' | 'breakout' | 'flappy' | '2048' | 'sudoku' | 'chess' | 'checkers' | 'hangman' | 'wordle' | 'pacman' | 'asteroids' | 'spaceinvaders' | 'bomberman' | 'minesweeper' | 'connect4' | 'solitaire' | 'mahjong' | 'crossword' | 'mathquiz' | 'typing' | 'colorblast' | 'jigsaw' | 'simon' | 'whackamole' | 'pinball' | 'racing' | 'platformer' | 'shooter'>(null)
+  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps' | 'snake' | 'tetris' | 'pong' | 'breakout' | 'flappy' | '2048' | 'sudoku' | 'chess' | 'checkers' | 'hangman' | 'wordle' | 'pacman' | 'asteroids' | 'spaceinvaders' | 'bomberman' | 'minesweeper' | 'connect4' | 'solitaire' | 'mahjong' | 'crossword' | 'mathquiz' | 'typing' | 'colorblast' | 'jigsaw' | 'simon' | 'whackamole' | 'pinball' | 'racing' | 'dragracing' | 'offroad' | 'platformer' | 'shooter'>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -2624,24 +3603,83 @@ function ChatPageContent() {
                     simon: 'Simon Says',
                     whackamole: 'Whack-a-Mole',
                     pinball: 'Pinball',
-                    racing: 'Racing',
+                    racing: 'Circuit Racing',
+                    dragracing: 'Drag Racing',
+                    offroad: 'Off-Road Racing',
                     platformer: 'Platformer',
                     shooter: 'Space Shooter'
                   }[activeGame] || 'Game' : 'Game'} 
                   onClose={() => setActiveGame(null)}
                   showBackButton={true}
-                  onBack={() => setShowGameLauncher(true)}
+                  onBack={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }}
                 >
-                  {activeGame === 'tictactoe' && <TicTacToeGame onClose={() => setShowGameLauncher(true)} />}
-                  {activeGame === 'number' && <NumberGuessGame onClose={() => setShowGameLauncher(true)} />}
-                  {activeGame === 'memory' && <MemoryGame onClose={() => setShowGameLauncher(true)} />}
-                  {activeGame === 'rps' && <RockPaperScissorsGame onClose={() => setShowGameLauncher(true)} />}
-                  {activeGame === 'snake' && <SnakeGame onClose={() => setShowGameLauncher(true)} />}
-                  {activeGame === 'tetris' && <TetrisGame onClose={() => setShowGameLauncher(true)} />}
-                  {activeGame === 'pong' && <PongGame onClose={() => setShowGameLauncher(true)} />}
-                  {activeGame === 'breakout' && <BreakoutGame onClose={() => setShowGameLauncher(true)} />}
-                  {activeGame === 'flappy' && <FlappyBirdGame onClose={() => setShowGameLauncher(true)} />}
-                  {activeGame === '2048' && <Game2048 onClose={() => setShowGameLauncher(true)} />}
+                  {activeGame === 'tictactoe' && <TicTacToeGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'number' && <NumberGuessGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'memory' && <MemoryGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'rps' && <RockPaperScissorsGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'snake' && <SnakeGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'tetris' && <TetrisGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'pong' && <PongGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'breakout' && <BreakoutGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'flappy' && <FlappyBirdGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === '2048' && <Game2048 onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'hangman' && <HangmanGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'mathquiz' && <MathQuizGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'whackamole' && <WhackAMoleGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'racing' && <RacingGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'dragracing' && <DragRacingGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'offroad' && <OffRoadRacingGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
                 </GameModal>
               </>
             )}
@@ -2698,7 +3736,7 @@ function ChatPageContent() {
             
             {/* Tooltip */}
             <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              Play 6 Games!
+              Play 19 Games!
               <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </motion.button>
