@@ -13,19 +13,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if Gmail credentials are configured
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      // Fallback: Log the contact form data
+      console.log('Contact Form Submission (Gmail not configured):', {
+        name,
+        email,
+        subject,
+        message,
+        timestamp: new Date().toISOString()
+      })
+      
+      return NextResponse.json(
+        { message: 'Contact form submitted successfully! (Email not configured)' },
+        { status: 200 }
+      )
+    }
+
     // Create transporter for Gmail
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.GMAIL_USER, // Your Gmail address
-        pass: process.env.GMAIL_APP_PASSWORD // Gmail App Password
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
       }
     })
 
     // Email content
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to: 'beloopstore@gmail.com', // Your Gmail where you want to receive messages
+      to: 'beloopstore@gmail.com',
       subject: `Contact Form: ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
