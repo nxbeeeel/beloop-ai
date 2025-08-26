@@ -87,6 +87,13 @@ export async function POST(request: Request) {
     if (!conversationId) {
       const conversation = createConversation(userId, message.substring(0, 50))
       conversationId = conversation.id
+    } else {
+      // Verify conversation exists and belongs to user
+      const existingConversation = getConversation(conversationId)
+      if (!existingConversation || existingConversation.userId !== userId) {
+        const conversation = createConversation(userId, message.substring(0, 50))
+        conversationId = conversation.id
+      }
     }
 
     // Add user message to history
