@@ -190,42 +190,81 @@ export default function Footer() {
           className="mb-12 pt-8 border-t border-gray-800"
         >
           <div className="text-center mb-8">
-            <h3 className="text-xl font-bold text-white mb-4">About Founder</h3>
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-                <div className="flex items-center justify-center mb-4">
-                  <img 
-                    src="/founder-profile.jpg" 
-                    alt="Mohammed Nabeel - Founder of Beloop AI"
-                    className="w-16 h-16 rounded-full object-cover border-2 border-cyan-400/50"
-                    onError={(e) => {
-                      // Fallback to initials if image fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      target.nextElementSibling?.classList.remove('hidden');
-                    }}
-                  />
-                  <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold hidden">
-                    MN
+            <h3 className="text-2xl font-bold text-white mb-2">About Founder</h3>
+            <p className="text-gray-400 mb-6">Meet the visionary behind Beloop AI</p>
+            <div className="max-w-3xl mx-auto">
+              <div className="bg-gradient-to-br from-gray-900/80 to-gray-800/80 rounded-2xl p-8 border border-gray-700/50 backdrop-blur-sm shadow-2xl">
+                <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+                  {/* Profile Image */}
+                  <div className="flex-shrink-0">
+                    <div className="relative">
+                      <img 
+                        src="/founder-profile.jpg" 
+                        alt="Mohammed Nabeel - Founder of Beloop AI"
+                        className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-gradient-to-r from-cyan-400 to-pink-500 shadow-2xl"
+                        onError={(e) => {
+                          // Fallback to initials if image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                      <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full flex items-center justify-center text-white text-3xl md:text-4xl font-bold hidden shadow-2xl">
+                        MN
+                      </div>
+                      {/* Status indicator */}
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-gray-900 flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <h4 className="text-lg font-semibold text-white mb-2">Mohammed Nabeel</h4>
-                <p className="text-gray-300 mb-3">Visionary Entrepreneur & AI Innovator</p>
-                <p className="text-gray-400 text-sm mb-4 leading-relaxed">
-                  A passionate visionary entrepreneur with developing skills in technology and AI innovation. 
-                  Dedicated to creating cutting-edge solutions that bridge the gap between imagination and reality.
-                </p>
-                <div className="flex items-center justify-center space-x-4">
+                  
+                  {/* Profile Info */}
+                  <div className="flex-1 text-center md:text-left">
+                    <h4 className="text-2xl font-bold text-white mb-2">Mohammed Nabeel</h4>
+                    <p className="text-cyan-400 font-semibold mb-3">Visionary Entrepreneur & AI Innovator</p>
+                    <p className="text-gray-300 text-sm mb-6 leading-relaxed">
+                      A passionate visionary entrepreneur with developing skills in technology and AI innovation. 
+                      Dedicated to creating cutting-edge solutions that bridge the gap between imagination and reality.
+                      Leading the future of AI-powered applications and digital experiences.
+                    </p>
+                    
+                    {/* Skills/Tags */}
+                    <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-6">
+                      <span className="px-3 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full border border-cyan-500/30">AI Innovation</span>
+                      <span className="px-3 py-1 bg-pink-500/20 text-pink-400 text-xs rounded-full border border-pink-500/30">Entrepreneurship</span>
+                      <span className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full border border-purple-500/30">Technology</span>
+                      <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30">Leadership</span>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-center space-x-4">
                   <motion.a
-                    href="https://linkedin.com"
+                    href="https://www.linkedin.com/in/mohammed-nabeel-beloop"
                     target="_blank"
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.05 }}
-                    className="flex items-center space-x-2 bg-gradient-to-r from-cyan-400 to-pink-500 hover:from-cyan-500 hover:to-pink-600 text-white px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer"
+                    whileTap={{ scale: 0.95 }}
+                    className="group flex items-center space-x-2 bg-gradient-to-r from-cyan-400 to-pink-500 hover:from-cyan-500 hover:to-pink-600 text-white px-6 py-3 rounded-lg transition-all duration-300 cursor-pointer shadow-lg hover:shadow-cyan-400/25"
                   >
-                    <Linkedin className="w-4 h-4" />
+                    <Linkedin className="w-4 h-4 group-hover:animate-bounce" />
                     <span className="text-sm font-medium">Connect on LinkedIn</span>
+                    <div className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      ↗
+                    </div>
                   </motion.a>
+                  
+                  <motion.a
+                    href="mailto:beloopstore@gmail.com"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="group flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-all duration-300 cursor-pointer border border-gray-700 hover:border-gray-600"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span className="text-sm font-medium">Email</span>
+                  </motion.a>
+                </div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -1313,6 +1313,21 @@ function ChatPageContent() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => setShowGameLauncher(true)}
+              className="p-2 rounded-xl text-gray-300 hover:text-pink-400 hover:bg-gray-800/50 transition-all duration-300 relative group"
+              title="Game Library"
+            >
+              <div className="w-5 h-5 relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative z-10 text-2xl leading-none">🎮</div>
+              </div>
+              {/* Animated indicator */}
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={startNewChat}
               className="p-2 rounded-xl text-gray-300 hover:text-cyan-400 hover:bg-gray-800/50 transition-all duration-300"
               title="New Chat"
@@ -1742,6 +1757,57 @@ function ChatPageContent() {
           </div>
         </div>
       </div>
+
+      {/* Floating Game Button - Shows when no messages or idle */}
+      {messages.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="fixed bottom-6 right-6 z-30"
+        >
+          <motion.button
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowGameLauncher(true)}
+            className="group relative p-4 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-full shadow-2xl hover:shadow-cyan-400/25 transition-all duration-300"
+            title="Play Games While Waiting"
+          >
+            <div className="text-2xl">🎮</div>
+            
+            {/* Animated ring */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-400 to-pink-500 opacity-20 animate-ping"></div>
+            
+            {/* Tooltip */}
+            <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+              Play 30+ Games!
+              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            </div>
+          </motion.button>
+        </motion.div>
+      )}
+
+      {/* Quick Game Access - Shows when there are messages but user might want a break */}
+      {messages.length > 0 && !isLoading && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 2 }}
+          className="fixed bottom-6 left-6 z-30"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowGameLauncher(true)}
+            className="group p-3 bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-full shadow-lg hover:bg-gray-700/80 transition-all duration-300"
+            title="Take a Break - Play Games"
+          >
+            <div className="text-lg">🎯</div>
+            
+            {/* Subtle pulse */}
+            <div className="absolute inset-0 rounded-full bg-cyan-400/20 opacity-0 group-hover:opacity-100 animate-pulse transition-opacity duration-300"></div>
+          </motion.button>
+        </motion.div>
+      )}
     </div>
   )
 }
