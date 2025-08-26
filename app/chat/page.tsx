@@ -2982,7 +2982,7 @@ const Puzzle15Game = ({ onClose }: { onClose: () => void }) => {
 }
 
 // Game Library selector - Performance Optimized
-const GameLibrary = memo(({ onSelect, onClose }: { onSelect: (key: string) => void, onClose: () => void }) => {
+const GameLibrary = memo(({ onSelect, onClose, isClient }: { onSelect: (key: string) => void, onClose: () => void, isClient: boolean }) => {
   const { data: session } = useSession()
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -3002,8 +3002,8 @@ const GameLibrary = memo(({ onSelect, onClose }: { onSelect: (key: string) => vo
     { key: 'classic', name: '🏆 Classic', count: 2 }
   ]
 
-  // Add favorites category only if user is logged in
-  const allCategories = session?.user?.email 
+  // Add favorites category only if user is logged in and hydrated
+  const allCategories = isClient && session?.user?.email 
     ? [
         ...categories.slice(0, 1), // All Games
         { key: 'favorites', name: '⭐ Favorites', count: favorites.length },
@@ -3618,13 +3618,25 @@ function ChatPageContent() {
     }
   }, [session?.user?.name])
 
-  // Don't render if not authenticated or not hydrated
-  if (!session || !isClient) {
+  // Don't render if not hydrated
+  if (!isClient) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
           <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render if not authenticated
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Please sign in to continue...</p>
         </div>
       </div>
     )
@@ -4341,6 +4353,7 @@ function ChatPageContent() {
                     setShowGameLauncher(false);
                   }}
                   onClose={() => setShowGameLauncher(false)}
+                  isClient={isClient}
                 />
               </>
             )}
