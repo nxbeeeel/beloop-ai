@@ -419,39 +419,6 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
     { key: 'number', name: 'Number Guess', emoji: '🎲', desc: 'Guess 1-100', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.2 },
     { key: 'memory', name: 'Memory', emoji: '🧠', desc: 'Match pairs', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.3 },
     { key: 'rps', name: 'Rock Paper Scissors', emoji: '✊✋✌️', desc: 'Best of luck', category: 'classic', difficulty: 'Easy', players: '1-2', rating: 4.0 },
-    { key: 'snake', name: 'Snake', emoji: '🐍', desc: 'Classic arcade', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.7 },
-    { key: 'tetris', name: 'Tetris', emoji: '🧩', desc: 'Block puzzle', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.8 },
-    { key: 'pong', name: 'Pong', emoji: '🏓', desc: 'Table tennis', category: 'arcade', difficulty: 'Medium', players: '1-2', rating: 4.4 },
-    { key: 'flappy', name: 'Flappy Bird', emoji: '🐦', desc: 'Avoid pipes', category: 'arcade', difficulty: 'Hard', players: '1', rating: 4.6 },
-    { key: 'hangman', name: 'Hangman', emoji: '🪢', desc: 'Word guessing', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.1 },
-    { key: 'sudoku', name: 'Sudoku', emoji: '🔢', desc: 'Number puzzle', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.5 },
-    { key: 'wordsearch', name: 'Word Search', emoji: '🔍', desc: 'Find words', category: 'educational', difficulty: 'Easy', players: '1', rating: 4.0 },
-    { key: 'breakout', name: 'Breakout', emoji: '🧱', desc: 'Break blocks', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.3 },
-    { key: 'pacman', name: 'Pac-Man', emoji: '👻', desc: 'Eat dots', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.7 },
-    { key: 'chess', name: 'Chess', emoji: '♟️', desc: 'Strategic battle', category: 'strategy', difficulty: 'Hard', players: '1-2', rating: 4.9 },
-    { key: 'checkers', name: 'Checkers', emoji: '🔴', desc: 'Jump pieces', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.2 },
-    { key: 'connect4', name: 'Connect 4', emoji: '🔵', desc: 'Line up 4', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.4 },
-    { key: 'battleship', name: 'Battleship', emoji: '🚢', desc: 'Sink ships', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.1 },
-    { key: 'minesweeper', name: 'Minesweeper', emoji: '💣', desc: 'Avoid bombs', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.6 },
-    { key: '2048', name: '2048', emoji: '🎯', desc: 'Merge tiles', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.8 },
-    { key: 'colorpicker', name: 'Color Picker', emoji: '🎨', desc: 'Match colors', category: 'action', difficulty: 'Easy', players: '1', rating: 3.9 },
-    { key: 'typing', name: 'Speed Typing', emoji: '⌨️', desc: 'Type fast', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.2 },
-    { key: 'reaction', name: 'Reaction Time', emoji: '⚡', desc: 'Click fast', category: 'action', difficulty: 'Easy', players: '1', rating: 4.0 },
-    { key: 'simon', name: 'Simon Says', emoji: '🎵', desc: 'Follow pattern', category: 'action', difficulty: 'Medium', players: '1', rating: 4.3 },
-    { key: 'whackamole', name: 'Whack-a-Mole', emoji: '🔨', desc: 'Hit moles', category: 'action', difficulty: 'Easy', players: '1', rating: 4.1 },
-    { key: 'carracing', name: 'Car Racing', emoji: '🏎️', desc: 'Avoid obstacles', category: 'action', difficulty: 'Medium', players: '1', rating: 4.4 },
-    { key: 'platformer', name: 'Platformer', emoji: '🏃', desc: 'Jump & run', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.5 },
-    { key: 'shooter', name: 'Space Shooter', emoji: '🚀', desc: 'Shoot aliens', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.3 },
-    { key: 'puzzle', name: 'Sliding Puzzle', emoji: '🧩', desc: 'Arrange tiles', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.4 },
-    { key: 'quiz', name: 'Trivia Quiz', emoji: '❓', desc: 'Test knowledge', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.2 },
-    { key: 'math', name: 'Math Challenge', emoji: '🧮', desc: 'Solve equations', category: 'educational', difficulty: 'Hard', players: '1', rating: 4.1 },
-    { key: 'wordle', name: 'Wordle', emoji: '📝', desc: 'Guess word', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.7 },
-    { key: 'crossword', name: 'Crossword', emoji: '📊', desc: 'Fill words', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.3 },
-    { key: 'jigsaw', name: 'Jigsaw Puzzle', emoji: '🧩', desc: 'Piece together', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.0 },
-    { key: 'maze', name: 'Maze Runner', emoji: '🏃', desc: 'Find exit', category: 'action', difficulty: 'Medium', players: '1', rating: 4.2 },
-    { key: 'tower', name: 'Tower Defense', emoji: '🏰', desc: 'Defend base', category: 'strategy', difficulty: 'Hard', players: '1', rating: 4.6 },
-    { key: 'rpg', name: 'Mini RPG', emoji: '⚔️', desc: 'Adventure game', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.4 },
-    { key: 'arcade', name: 'Arcade Collection', emoji: '🕹️', desc: 'Multiple games', category: 'arcade', difficulty: 'Mixed', players: '1', rating: 4.5 },
   ]
 
   const filteredGames = games.filter(game => {
@@ -478,7 +445,7 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Choose Your Adventure</h2>
-              <p className="text-gray-300">30+ games to play while the AI is busy</p>
+              <p className="text-gray-300">4 fun games to play while the AI is busy</p>
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold text-cyan-400">{filteredGames.length}</div>
@@ -1691,39 +1658,6 @@ function ChatPageContent() {
                   {activeGame === 'number' && <NumberGuessGame onClose={() => setActiveGame(null)} />}
                   {activeGame === 'memory' && <MemoryGame onClose={() => setActiveGame(null)} />}
                   {activeGame === 'rps' && <RockPaperScissorsGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'snake' && <SnakeGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'tetris' && <TetrisGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'pong' && <PongGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'flappy' && <FlappyBirdGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'hangman' && <HangmanGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'sudoku' && <SudokuGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'wordsearch' && <WordSearchGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'breakout' && <BreakoutGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'pacman' && <PacmanGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'chess' && <ChessGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'checkers' && <CheckersGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'connect4' && <Connect4Game onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'battleship' && <BattleshipGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'minesweeper' && <MinesweeperGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === '2048' && <Game2048 onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'colorpicker' && <ColorPickerGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'typing' && <TypingGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'reaction' && <ReactionGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'simon' && <SimonGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'whackamole' && <WhackAMoleGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'carracing' && <CarRacingGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'platformer' && <PlatformerGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'shooter' && <ShooterGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'puzzle' && <SlidingPuzzleGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'quiz' && <QuizGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'math' && <MathGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'wordle' && <WordleGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'crossword' && <CrosswordGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'jigsaw' && <JigsawGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'maze' && <MazeGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'tower' && <TowerDefenseGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'rpg' && <RPGGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'arcade' && <ArcadeCollection onClose={() => setActiveGame(null)} />}
                 </GameModal>
               </>
             )}
@@ -1780,7 +1714,7 @@ function ChatPageContent() {
             
             {/* Tooltip */}
             <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              Play 30+ Games!
+              Play 4 Games!
               <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </motion.button>
