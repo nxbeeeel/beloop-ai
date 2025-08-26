@@ -1,123 +1,48 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Send, 
-  Loader2,
-  Bot,
-  User,
-  Clock,
-  Copy,
-  Check,
-  Plus
-} from 'lucide-react'
+import { Send, Loader2, Bot, User, Clock, Copy, Check, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
-// Simple client-side session check
-function useClientSession() {
-  const [session, setSession] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const response = await fetch('/api/auth/session')
-        if (response.ok) {
-          const data = await response.json()
-          setSession(data)
-        }
-      } catch (error) {
-        console.error('Session check failed:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    checkSession()
-  }, [])
-
-  return { session, loading }
-}
-
-function ChatPageContent() {
-  const router = useRouter()
-  const { session, loading } = useClientSession()
-  
-  // All state declarations at the top
+export default function ChatPage() {
   const [messages, setMessages] = useState<any[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
-  const [subscription, setSubscription] = useState<any>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  // Redirect to login if not authenticated
+  // Simple authentication check
   useEffect(() => {
-    if (!loading && !session) {
-      router.push('/login')
-    }
-  }, [session, loading, router])
-
-  // Show loading while checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Don't render if not authenticated
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Please sign in to continue...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Set initial message when session is available
-  useEffect(() => {
-    if (session?.user?.name && messages.length === 0) {
-      setMessages([
-        {
-          id: '1',
-          role: 'assistant',
-          content: `Hello ${session.user.name}! I'm your AI assistant. How can I help you today?`,
-          timestamp: new Date()
-        }
-      ])
-    }
-  }, [session?.user?.name, messages.length])
-
-  // Fetch subscription data
-  useEffect(() => {
-    const fetchSubscription = async () => {
-      if (!session?.user?.email) return
-
+    const checkAuth = async () => {
       try {
-        const response = await fetch(`/api/subscription?userId=${session.user.email}`)
+        const response = await fetch('/api/auth/session')
         if (response.ok) {
           const data = await response.json()
-          const activeSubscription = data.subscriptions?.find((sub: any) => sub.status === 'active')
-          setSubscription(activeSubscription)
+          if (data.user) {
+            setIsAuthenticated(true)
+            // Set initial message
+            setMessages([
+              {
+                id: '1',
+                role: 'assistant',
+                content: `Hello ${data.user.name || 'there'}! I'm your AI assistant. How can I help you today?`,
+                timestamp: new Date()
+              }
+            ])
+          }
         }
       } catch (error) {
-        console.error('Failed to fetch subscription:', error)
+        console.error('Auth check failed:', error)
+      } finally {
+        setIsCheckingAuth(false)
       }
     }
 
-    fetchSubscription()
-  }, [session?.user?.email])
+    checkAuth()
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -129,7 +54,7 @@ function ChatPageContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!inputValue.trim() || isLoading || !session?.user?.id) return
+    if (!inputValue.trim() || isLoading) return
 
     const userMessage = {
       id: Date.now().toString(),
@@ -149,8 +74,7 @@ function ChatPageContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: inputValue,
-          userId: session.user.id
+          message: inputValue
         }),
       })
 
@@ -197,6 +121,39 @@ function ChatPageContent() {
     }
   }
 
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-8 h-8 text-red-400" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Authentication Required</h2>
+          <p className="text-gray-400 mb-4">Please sign in to access the chat.</p>
+          <Link 
+            href="/login" 
+            className="inline-block px-6 py-3 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors"
+          >
+            Sign In
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -206,11 +163,6 @@ function ChatPageContent() {
             <Link href="/" className="text-2xl font-bold text-cyan-400">
               Beloop AI
             </Link>
-            {subscription && (
-              <div className="flex items-center space-x-2 px-3 py-1 rounded-full border border-cyan-400/50 bg-cyan-500/20">
-                <span className="text-xs font-medium text-gray-200">Premium</span>
-              </div>
-            )}
           </div>
           
           <div className="flex items-center space-x-4">
@@ -320,8 +272,4 @@ function ChatPageContent() {
       </div>
     </div>
   )
-}
-
-export default function ChatPage() {
-  return <ChatPageContent />
 }
