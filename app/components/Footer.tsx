@@ -238,9 +238,9 @@ export default function Footer() {
                     </div>
                     
                     {/* Action Buttons */}
-                    <div className="flex items-center justify-center space-x-4">
+                    <div className="flex items-center justify-center space-x-4">t  
                   <motion.a
-                    href="https://www.linkedin.com/in/mohammed-nabeel-beloop"
+                    href="https://www.linkedin.com/in/mohammed-nabeel-ca-007a8122b"
                     target="_blank"
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.05 }}

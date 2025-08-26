@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Send, 
@@ -398,6 +398,529 @@ const RockPaperScissorsGame = ({ onClose }: { onClose: () => void }) => {
   )
 }
 
+// Snake Game
+const SnakeGame = ({ onClose }: { onClose: () => void }) => {
+  const [snake, setSnake] = useState([{ x: 10, y: 10 }])
+  const [food, setFood] = useState({ x: 15, y: 15 })
+  const [direction, setDirection] = useState('right')
+  const [gameOver, setGameOver] = useState(false)
+  const [score, setScore] = useState(0)
+  const [gameStarted, setGameStarted] = useState(false)
+  const [speed, setSpeed] = useState(150)
+
+  const boardSize = 20
+  const cellSize = 15
+
+  const generateFood = () => {
+    return {
+      x: Math.floor(Math.random() * boardSize),
+      y: Math.floor(Math.random() * boardSize)
+    }
+  }
+
+  const resetGame = () => {
+    setSnake([{ x: 10, y: 10 }])
+    setFood(generateFood())
+    setDirection('right')
+    setGameOver(false)
+    setScore(0)
+    setGameStarted(false)
+  }
+
+  const moveSnake = useCallback(() => {
+    if (gameOver || !gameStarted) return
+
+    setSnake(prevSnake => {
+      const newSnake = [...prevSnake]
+      const head = { ...newSnake[0] }
+
+      switch (direction) {
+        case 'up': head.y = (head.y - 1 + boardSize) % boardSize; break
+        case 'down': head.y = (head.y + 1) % boardSize; break
+        case 'left': head.x = (head.x - 1 + boardSize) % boardSize; break
+        case 'right': head.x = (head.x + 1) % boardSize; break
+      }
+
+      // Check collision with self
+      if (newSnake.some(segment => segment.x === head.x && segment.y === head.y)) {
+        setGameOver(true)
+        return prevSnake
+      }
+
+      newSnake.unshift(head)
+
+      // Check if food eaten
+      if (head.x === food.x && head.y === food.y) {
+        setScore(prev => prev + 10)
+        setFood(generateFood())
+        setSpeed(prev => Math.max(50, prev - 2)) // Increase speed
+      } else {
+        newSnake.pop()
+      }
+
+      return newSnake
+    })
+  }, [direction, gameOver, gameStarted, food])
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!gameStarted) {
+        setGameStarted(true)
+        return
+      }
+
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          if (direction !== 'down') setDirection('up')
+          break
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          if (direction !== 'up') setDirection('down')
+          break
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          if (direction !== 'right') setDirection('left')
+          break
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          if (direction !== 'left') setDirection('right')
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [direction, gameStarted])
+
+  useEffect(() => {
+    if (gameStarted && !gameOver) {
+      const interval = setInterval(moveSnake, speed)
+      return () => clearInterval(interval)
+    }
+  }, [moveSnake, gameStarted, gameOver, speed])
+
+  return (
+    <div className="p-6 max-w-md mx-auto text-center">
+      <h2 className="text-xl font-semibold mb-4">🐍 Snake Game</h2>
+      
+      <div className="mb-4">
+        <div className="text-lg font-bold text-cyan-400">Score: {score}</div>
+        <div className="text-sm text-gray-400">Speed: {Math.round(1000/speed)} FPS</div>
+      </div>
+
+      <div className="relative inline-block">
+        <div 
+          className="border-2 border-gray-600 bg-gray-900"
+          style={{ 
+            width: boardSize * cellSize, 
+            height: boardSize * cellSize 
+          }}
+        >
+          {/* Snake */}
+          {snake.map((segment, index) => (
+            <div
+              key={index}
+              className={`absolute ${index === 0 ? 'bg-green-400' : 'bg-green-600'}`}
+              style={{
+                width: cellSize - 1,
+                height: cellSize - 1,
+                left: segment.x * cellSize,
+                top: segment.y * cellSize,
+                borderRadius: index === 0 ? '4px' : '2px'
+              }}
+            />
+          ))}
+          
+          {/* Food */}
+          <div
+            className="absolute bg-red-500 rounded-full"
+            style={{
+              width: cellSize - 1,
+              height: cellSize - 1,
+              left: food.x * cellSize,
+              top: food.y * cellSize
+            }}
+          />
+        </div>
+      </div>
+
+      {!gameStarted && (
+        <div className="mt-4 p-4 bg-gray-800 rounded-lg">
+          <div className="text-lg font-semibold text-cyan-400 mb-2">How to Play</div>
+          <div className="text-sm text-gray-300 space-y-1">
+            <div>• Use Arrow Keys or WASD to move</div>
+            <div>• Eat red food to grow and score points</div>
+            <div>• Don't hit yourself!</div>
+            <div>• Press any key to start</div>
+          </div>
+        </div>
+      )}
+
+      {gameOver && (
+        <div className="mt-4 p-4 bg-red-900/50 border border-red-500 rounded-lg">
+          <div className="text-lg font-semibold text-red-400 mb-2">Game Over!</div>
+          <div className="text-sm text-gray-300">Final Score: {score}</div>
+        </div>
+      )}
+
+      <div className="mt-4 flex justify-center space-x-2">
+        <button 
+          onClick={resetGame}
+          className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+        >
+          {gameOver ? 'Play Again' : 'Reset'}
+        </button>
+        <button 
+          onClick={onClose}
+          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// Tetris Game
+const TetrisGame = ({ onClose }: { onClose: () => void }) => {
+  const [board, setBoard] = useState(createEmptyBoard())
+  const [currentPiece, setCurrentPiece] = useState(generatePiece())
+  const [position, setPosition] = useState({ x: 3, y: 0 })
+  const [rotation, setRotation] = useState(0)
+  const [score, setScore] = useState(0)
+  const [level, setLevel] = useState(1)
+  const [lines, setLines] = useState(0)
+  const [gameOver, setGameOver] = useState(false)
+  const [gameStarted, setGameStarted] = useState(false)
+  const [speed, setSpeed] = useState(1000)
+
+  const BOARD_WIDTH = 10
+  const BOARD_HEIGHT = 20
+
+  function createEmptyBoard() {
+    return Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(0))
+  }
+
+  function generatePiece() {
+    const pieces = [
+      // I piece
+      [[1, 1, 1, 1]],
+      // O piece
+      [[1, 1], [1, 1]],
+      // T piece
+      [[0, 1, 0], [1, 1, 1]],
+      // S piece
+      [[0, 1, 1], [1, 1, 0]],
+      // Z piece
+      [[1, 1, 0], [0, 1, 1]],
+      // J piece
+      [[1, 0, 0], [1, 1, 1]],
+      // L piece
+      [[0, 0, 1], [1, 1, 1]]
+    ]
+    return pieces[Math.floor(Math.random() * pieces.length)]
+  }
+
+  function rotatePiece(piece: number[][]) {
+    const rows = piece.length
+    const cols = piece[0].length
+    const rotated = Array(cols).fill(null).map(() => Array(rows).fill(0))
+    
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        rotated[j][rows - 1 - i] = piece[i][j]
+      }
+    }
+    return rotated
+  }
+
+  function isValidMove(piece: number[][], x: number, y: number, board: number[][]) {
+    for (let row = 0; row < piece.length; row++) {
+      for (let col = 0; col < piece[0].length; col++) {
+        if (piece[row][col]) {
+          const newX = x + col
+          const newY = y + row
+          
+          if (newX < 0 || newX >= BOARD_WIDTH || newY >= BOARD_HEIGHT) return false
+          if (newY >= 0 && board[newY][newX]) return false
+        }
+      }
+    }
+    return true
+  }
+
+  function placePiece() {
+    setBoard(prevBoard => {
+      const newBoard = prevBoard.map(row => [...row])
+      
+      for (let row = 0; row < currentPiece.length; row++) {
+        for (let col = 0; col < currentPiece[0].length; col++) {
+          if (currentPiece[row][col]) {
+            const boardY = position.y + row
+            const boardX = position.x + col
+            if (boardY >= 0) {
+              newBoard[boardY][boardX] = 1
+            }
+          }
+        }
+      }
+      
+      return newBoard
+    })
+    
+    setCurrentPiece(generatePiece())
+    setPosition({ x: 3, y: 0 })
+    setRotation(0)
+  }
+
+  function clearLines() {
+    setBoard(prevBoard => {
+      const newBoard = prevBoard.filter(row => !row.every(cell => cell === 1))
+      const linesCleared = BOARD_HEIGHT - newBoard.length
+      
+      if (linesCleared > 0) {
+        setLines(prev => prev + linesCleared)
+        setScore(prev => prev + linesCleared * 100 * level)
+        
+        // Add new empty rows at top
+        while (newBoard.length < BOARD_HEIGHT) {
+          newBoard.unshift(Array(BOARD_WIDTH).fill(0))
+        }
+        
+        // Level up every 10 lines
+        const newLevel = Math.floor((lines + linesCleared) / 10) + 1
+        if (newLevel > level) {
+          setLevel(newLevel)
+          setSpeed(prev => Math.max(100, prev - 50))
+        }
+      }
+      
+      return newBoard
+    })
+  }
+
+  function moveDown() {
+    if (gameOver || !gameStarted) return
+    
+    const newY = position.y + 1
+    if (isValidMove(currentPiece, position.x, newY, board)) {
+      setPosition(prev => ({ ...prev, y: newY }))
+    } else {
+      placePiece()
+      clearLines()
+      
+      // Check for game over
+      if (!isValidMove(generatePiece(), 3, 0, board)) {
+        setGameOver(true)
+      }
+    }
+  }
+
+  function moveLeft() {
+    if (gameOver || !gameStarted) return
+    const newX = position.x - 1
+    if (isValidMove(currentPiece, newX, position.y, board)) {
+      setPosition(prev => ({ ...prev, x: newX }))
+    }
+  }
+
+  function moveRight() {
+    if (gameOver || !gameStarted) return
+    const newX = position.x + 1
+    if (isValidMove(currentPiece, newX, position.y, board)) {
+      setPosition(prev => ({ ...prev, x: newX }))
+    }
+  }
+
+  function rotate() {
+    if (gameOver || !gameStarted) return
+    const rotatedPiece = rotatePiece(currentPiece)
+    if (isValidMove(rotatedPiece, position.x, position.y, board)) {
+      setCurrentPiece(rotatedPiece)
+      setRotation(prev => (prev + 1) % 4)
+    }
+  }
+
+  function resetGame() {
+    setBoard(createEmptyBoard())
+    setCurrentPiece(generatePiece())
+    setPosition({ x: 3, y: 0 })
+    setRotation(0)
+    setScore(0)
+    setLevel(1)
+    setLines(0)
+    setGameOver(false)
+    setGameStarted(false)
+    setSpeed(1000)
+  }
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!gameStarted) {
+        setGameStarted(true)
+        return
+      }
+
+      switch (e.key) {
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          moveLeft()
+          break
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          moveRight()
+          break
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          moveDown()
+          break
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          rotate()
+          break
+        case ' ':
+          e.preventDefault()
+          while (isValidMove(currentPiece, position.x, position.y + 1, board)) {
+            setPosition(prev => ({ ...prev, y: prev.y + 1 }))
+          }
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [currentPiece, position, board, gameStarted, gameOver])
+
+  useEffect(() => {
+    if (gameStarted && !gameOver) {
+      const interval = setInterval(moveDown, speed)
+      return () => clearInterval(interval)
+    }
+  }, [gameStarted, gameOver, speed])
+
+  const cellSize = 20
+
+  return (
+    <div className="p-6 max-w-lg mx-auto text-center">
+      <h2 className="text-xl font-semibold mb-4">🧩 Tetris</h2>
+      
+      <div className="flex justify-between items-center mb-4">
+        <div className="text-left">
+          <div className="text-lg font-bold text-cyan-400">Score: {score}</div>
+          <div className="text-sm text-gray-400">Level: {level}</div>
+          <div className="text-sm text-gray-400">Lines: {lines}</div>
+        </div>
+        <div className="text-right">
+          <div className="text-sm text-gray-400">Speed: {Math.round(1000/speed)} FPS</div>
+        </div>
+      </div>
+
+      <div className="flex justify-center space-x-6">
+        {/* Game Board */}
+        <div className="relative">
+          <div 
+            className="border-2 border-gray-600 bg-gray-900"
+            style={{ 
+              width: BOARD_WIDTH * cellSize, 
+              height: BOARD_HEIGHT * cellSize 
+            }}
+          >
+            {/* Placed pieces */}
+            {board.map((row, rowIndex) => 
+              row.map((cell, colIndex) => 
+                cell ? (
+                  <div
+                    key={`${rowIndex}-${colIndex}`}
+                    className="absolute bg-cyan-500"
+                    style={{
+                      width: cellSize - 1,
+                      height: cellSize - 1,
+                      left: colIndex * cellSize,
+                      top: rowIndex * cellSize
+                    }}
+                  />
+                ) : null
+              )
+            )}
+            
+            {/* Current piece */}
+            {currentPiece.map((row, rowIndex) => 
+              row.map((cell, colIndex) => 
+                cell ? (
+                  <div
+                    key={`current-${rowIndex}-${colIndex}`}
+                    className="absolute bg-pink-500"
+                    style={{
+                      width: cellSize - 1,
+                      height: cellSize - 1,
+                      left: (position.x + colIndex) * cellSize,
+                      top: (position.y + rowIndex) * cellSize
+                    }}
+                  />
+                ) : null
+              )
+            )}
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="text-left">
+          <div className="text-sm font-semibold text-cyan-400 mb-2">Controls</div>
+          <div className="text-xs text-gray-300 space-y-1">
+            <div>← → Move</div>
+            <div>↓ Drop</div>
+            <div>↑ Rotate</div>
+            <div>Space: Hard Drop</div>
+          </div>
+        </div>
+      </div>
+
+      {!gameStarted && (
+        <div className="mt-4 p-4 bg-gray-800 rounded-lg">
+          <div className="text-lg font-semibold text-cyan-400 mb-2">How to Play</div>
+          <div className="text-sm text-gray-300 space-y-1">
+            <div>• Arrange falling blocks to clear lines</div>
+            <div>• Complete lines to score points</div>
+            <div>• Game speeds up as you level up</div>
+            <div>• Press any key to start</div>
+          </div>
+        </div>
+      )}
+
+      {gameOver && (
+        <div className="mt-4 p-4 bg-red-900/50 border border-red-500 rounded-lg">
+          <div className="text-lg font-semibold text-red-400 mb-2">Game Over!</div>
+          <div className="text-sm text-gray-300">Final Score: {score}</div>
+        </div>
+      )}
+
+      <div className="mt-4 flex justify-center space-x-2">
+        <button 
+          onClick={resetGame}
+          className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+        >
+          {gameOver ? 'Play Again' : 'Reset'}
+        </button>
+        <button 
+          onClick={onClose}
+          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // Game Library selector
 const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, onClose: () => void }) => {
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -419,6 +942,8 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
     { key: 'number', name: 'Number Guess', emoji: '🎲', desc: 'Guess 1-100', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.2 },
     { key: 'memory', name: 'Memory', emoji: '🧠', desc: 'Match pairs', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.3 },
     { key: 'rps', name: 'Rock Paper Scissors', emoji: '✊✋✌️', desc: 'Best of luck', category: 'classic', difficulty: 'Easy', players: '1-2', rating: 4.0 },
+    { key: 'snake', name: 'Snake', emoji: '🐍', desc: 'Classic arcade', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.7 },
+    { key: 'tetris', name: 'Tetris', emoji: '🧩', desc: 'Block puzzle', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.8 },
   ]
 
   const filteredGames = games.filter(game => {
@@ -438,138 +963,211 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
   }
 
   return (
-    <GameModal title="🎮 Game Arcade" onClose={onClose}>
-      <div className="p-6 max-w-7xl mx-auto h-full flex flex-col">
-        {/* Header with Search and Stats */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Choose Your Adventure</h2>
-              <p className="text-gray-300">4 fun games to play while the AI is busy</p>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-cyan-400">{filteredGames.length}</div>
-              <div className="text-sm text-gray-400">Games Available</div>
+    <GameModal title="🎮 Ultimate Gaming Arcade" onClose={onClose}>
+      <div className="relative p-6 max-w-7xl mx-auto h-full flex flex-col overflow-hidden">
+        {/* Animated Background Emojis */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Floating Gaming Emojis */}
+          <div className="absolute top-10 left-10 animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }}>🎮</div>
+          <div className="absolute top-20 right-20 animate-pulse" style={{ animationDelay: '1s', animationDuration: '4s' }}>🎯</div>
+          <div className="absolute top-40 left-1/4 animate-bounce" style={{ animationDelay: '2s', animationDuration: '3.5s' }}>🏆</div>
+          <div className="absolute top-60 right-1/3 animate-pulse" style={{ animationDelay: '0.5s', animationDuration: '4.5s' }}>⭐</div>
+          <div className="absolute top-80 left-1/2 animate-bounce" style={{ animationDelay: '1.5s', animationDuration: '3.2s' }}>🎲</div>
+          <div className="absolute top-32 right-1/4 animate-pulse" style={{ animationDelay: '2.5s', animationDuration: '4.2s' }}>🎪</div>
+          
+          {/* Moving Stars */}
+          <div className="absolute top-16 left-1/3 animate-spin" style={{ animationDelay: '0s', animationDuration: '8s' }}>✨</div>
+          <div className="absolute top-48 right-1/2 animate-spin" style={{ animationDelay: '2s', animationDuration: '10s' }}>💫</div>
+          <div className="absolute top-72 left-2/3 animate-spin" style={{ animationDelay: '4s', animationDuration: '12s' }}>🌟</div>
+          
+          {/* Gradient Orbs */}
+          <div className="absolute top-24 left-1/6 w-32 h-32 bg-gradient-to-r from-cyan-500/20 to-pink-500/20 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute top-56 right-1/6 w-24 h-24 bg-gradient-to-r from-purple-500/20 to-yellow-500/20 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-88 left-3/4 w-28 h-28 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        </div>
+
+        {/* Header with Enhanced Design */}
+        <div className="relative mb-8">
+          <div className="text-center mb-6">
+            <motion.h1 
+              className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-pink-400 to-purple-400 bg-clip-text text-transparent"
+              animate={{ 
+                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+              }}
+              transition={{ 
+                duration: 3, 
+                repeat: Infinity, 
+                ease: "linear" 
+              }}
+            >
+              🎮 ULTIMATE GAMING ARCADE 🎮
+            </motion.h1>
+            <p className="text-xl text-gray-300 mb-2">Choose Your Adventure & Level Up!</p>
+            <div className="flex items-center justify-center space-x-4 text-sm text-gray-400">
+              <span className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span>Live Gaming</span>
+              </span>
+              <span>•</span>
+              <span>🎯 {filteredGames.length} Epic Games</span>
+              <span>•</span>
+              <span>⭐ Premium Experience</span>
             </div>
           </div>
           
-          {/* Search Bar */}
-          <div className="relative mb-4">
-            <input
-              type="text"
-              placeholder="Search games..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-4 pl-12 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
-            />
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          {/* Enhanced Search Bar */}
+          <div className="relative mb-6">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="🔍 Search for your next adventure..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full p-5 pl-14 pr-5 bg-gradient-to-r from-gray-800/80 to-gray-900/80 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 transition-all duration-300 backdrop-blur-sm"
+              />
+              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-6 h-6 text-cyan-400" />
+              <div className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                {searchTerm ? `${filteredGames.length} results` : 'Type to search...'}
+              </div>
+            </div>
           </div>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          {/* Enhanced Category Filter */}
+          <div className="flex flex-wrap justify-center gap-3 mb-6">
             {categories.map(cat => (
-              <button
+              <motion.button
                 key={cat.key}
                 onClick={() => setSelectedCategory(cat.key)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 transform ${
                   selectedCategory === cat.key
-                    ? 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white shadow-lg'
-                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                }`}
+                    ? 'bg-gradient-to-r from-cyan-500 via-pink-500 to-purple-500 text-white shadow-2xl shadow-cyan-400/30 scale-105'
+                    : 'bg-gradient-to-r from-gray-800/60 to-gray-700/60 text-gray-300 hover:bg-gradient-to-r hover:from-cyan-600/20 hover:to-pink-600/20 hover:text-white border border-gray-600/50 hover:border-cyan-400/50'
+                } backdrop-blur-sm`}
               >
-                {cat.name} ({cat.count})
-              </button>
+                <span className="text-lg mr-2">{cat.name.split(' ')[0]}</span>
+                <span className="bg-white/20 px-2 py-1 rounded-full text-xs">{cat.count}</span>
+              </motion.button>
             ))}
           </div>
         </div>
 
-        {/* Games Grid */}
-        <div className="flex-1 overflow-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredGames.map(game => (
+        {/* Enhanced Games Grid */}
+        <div className="flex-1 overflow-auto relative">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredGames.map((game, index) => (
               <motion.button
                 key={game.key}
                 onClick={() => onSelect(game.key)}
                 onMouseEnter={() => setHoveredGame(game.key)}
                 onMouseLeave={() => setHoveredGame(null)}
-                whileHover={{ scale: 1.05, y: -5 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.08, y: -8, rotateY: 5 }}
                 whileTap={{ scale: 0.95 }}
-                className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden ${
+                className={`group relative rounded-3xl border-2 transition-all duration-500 overflow-hidden transform perspective-1000 ${
                   hoveredGame === game.key
-                    ? 'border-cyan-400/50 bg-gradient-to-br from-gray-800/80 to-gray-900/80 shadow-2xl shadow-cyan-400/25'
-                    : 'border-gray-700/50 bg-gradient-to-br from-gray-900/60 to-gray-800/60 hover:border-cyan-400/30'
-                }`}
+                    ? 'border-cyan-400/60 bg-gradient-to-br from-gray-800/90 via-gray-900/90 to-gray-800/90 shadow-2xl shadow-cyan-400/40 scale-105'
+                    : 'border-gray-600/30 bg-gradient-to-br from-gray-900/70 via-gray-800/70 to-gray-900/70 hover:border-cyan-400/40 hover:shadow-xl hover:shadow-cyan-400/20'
+                } backdrop-blur-sm`}
               >
-                {/* Background Pattern */}
-                <div className="absolute inset-0 opacity-10">
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-pink-500/20"></div>
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-cyan-400/10 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
-                  <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-pink-400/10 to-transparent rounded-full translate-y-8 -translate-x-8"></div>
+                {/* Animated Background */}
+                <div className="absolute inset-0">
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-pink-500/10 to-purple-500/10 animate-pulse"></div>
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-400/20 to-transparent rounded-full -translate-y-12 translate-x-12 animate-pulse"></div>
+                  <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-pink-400/20 to-transparent rounded-full translate-y-10 -translate-x-10 animate-pulse" style={{ animationDelay: '1s' }}></div>
+                  <div className="absolute top-1/2 left-1/2 w-16 h-16 bg-gradient-to-r from-purple-400/20 to-transparent rounded-full -translate-x-8 -translate-y-8 animate-pulse" style={{ animationDelay: '2s' }}></div>
                 </div>
 
                 {/* Game Content */}
                 <div className="relative p-6 text-left">
-                  {/* Game Icon */}
-                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
+                  {/* Enhanced Game Icon */}
+                  <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-500 group-hover:rotate-12">
                     {game.emoji}
                   </div>
                   
-                  {/* Game Info */}
-                  <div className="mb-3">
-                    <h3 className="text-white font-bold text-lg mb-1">{game.name}</h3>
-                    <p className="text-gray-400 text-sm">{game.desc}</p>
+                  {/* Enhanced Game Info */}
+                  <div className="mb-4">
+                    <h3 className="text-white font-bold text-xl mb-2 group-hover:text-cyan-400 transition-colors duration-300">{game.name}</h3>
+                    <p className="text-gray-300 text-sm leading-relaxed">{game.desc}</p>
                   </div>
 
-                  {/* Game Stats */}
-                  <div className="flex items-center justify-between text-xs">
+                  {/* Enhanced Game Stats */}
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 rounded-full ${getDifficultyColor(game.difficulty)} bg-gray-800/50`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(game.difficulty)} bg-gray-800/80 backdrop-blur-sm border border-gray-600/50`}>
                         {game.difficulty}
                       </span>
-                      <span className="text-gray-400 bg-gray-800/50 px-2 py-1 rounded-full">
+                      <span className="text-gray-300 bg-gray-800/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold border border-gray-600/50">
                         {game.players}
                       </span>
                     </div>
-                    <div className="flex items-center space-x-1">
+                    <div className="flex items-center space-x-1 bg-yellow-500/20 px-2 py-1 rounded-full border border-yellow-500/30">
                       <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                      <span className="text-gray-300">{game.rating}</span>
+                      <span className="text-yellow-300 text-xs font-semibold">{game.rating}</span>
                     </div>
                   </div>
 
-                  {/* Hover Effect */}
-                  <div className={`absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl`}></div>
+                  {/* Enhanced Hover Effects */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-pink-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
                   
-                  {/* Play Button */}
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full flex items-center justify-center">
-                      <Play className="w-4 h-4 text-white fill-current" />
+                  {/* Enhanced Play Button */}
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-110">
+                    <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 via-pink-400 to-purple-400 rounded-full flex items-center justify-center shadow-lg shadow-cyan-400/50 animate-pulse">
+                      <Play className="w-5 h-5 text-white fill-current" />
                     </div>
+                  </div>
+
+                  {/* Sparkle Effects */}
+                  <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <span className="text-yellow-400 animate-spin" style={{ animationDuration: '2s' }}>✨</span>
+                  </div>
+                  <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ animationDelay: '0.5s' }}>
+                    <span className="text-cyan-400 animate-bounce">💫</span>
                   </div>
                 </div>
               </motion.button>
             ))}
           </div>
 
-          {/* Empty State */}
+          {/* Enhanced Empty State */}
           {filteredGames.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🎮</div>
-              <h3 className="text-xl font-semibold text-white mb-2">No games found</h3>
-              <p className="text-gray-400">Try adjusting your search or category filter</p>
-            </div>
+            <motion.div 
+              className="text-center py-16"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="text-8xl mb-6 animate-bounce">🎮</div>
+              <h3 className="text-2xl font-bold text-white mb-3 bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent">No Games Found</h3>
+              <p className="text-gray-400 text-lg">Try adjusting your search or category filter</p>
+              <div className="mt-4 flex justify-center space-x-2">
+                <span className="text-2xl animate-pulse">🔍</span>
+                <span className="text-2xl animate-pulse" style={{ animationDelay: '0.5s' }}>🎯</span>
+                <span className="text-2xl animate-pulse" style={{ animationDelay: '1s' }}>✨</span>
+              </div>
+            </motion.div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="mt-6 pt-4 border-t border-gray-700/50">
-          <div className="flex items-center justify-between text-sm text-gray-400">
-            <div className="flex items-center space-x-4">
-              <span>🎯 {filteredGames.length} games available</span>
-              <span>⭐ Average rating: 4.3</span>
+        {/* Enhanced Footer */}
+        <div className="relative mt-8 pt-6 border-t border-gray-700/50">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center space-x-6">
+              <span className="flex items-center space-x-2 text-cyan-400">
+                <span className="text-lg">🎯</span>
+                <span>{filteredGames.length} Epic Games Available</span>
+              </span>
+              <span className="flex items-center space-x-2 text-yellow-400">
+                <Star className="w-4 h-4 fill-current" />
+                <span>Average Rating: 4.5</span>
+              </span>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>All games are free to play</span>
+            <div className="flex items-center space-x-2 text-green-400">
+              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="font-semibold">All Games Free to Play!</span>
             </div>
           </div>
         </div>
@@ -923,7 +1521,7 @@ function ChatPageContent() {
     title: string
   } | null>(null)
   const [showGameLauncher, setShowGameLauncher] = useState(false)
-  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps'>(null)
+  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps' | 'snake' | 'tetris'>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -1658,6 +2256,8 @@ function ChatPageContent() {
                   {activeGame === 'number' && <NumberGuessGame onClose={() => setActiveGame(null)} />}
                   {activeGame === 'memory' && <MemoryGame onClose={() => setActiveGame(null)} />}
                   {activeGame === 'rps' && <RockPaperScissorsGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'snake' && <SnakeGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'tetris' && <TetrisGame onClose={() => setActiveGame(null)} />}
                 </GameModal>
               </>
             )}
@@ -1714,7 +2314,7 @@ function ChatPageContent() {
             
             {/* Tooltip */}
             <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              Play 4 Games!
+              Play 6 Games!
               <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </motion.button>
