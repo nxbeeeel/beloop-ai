@@ -3557,7 +3557,7 @@ function ChatPageContent() {
   // Fetch subscription data
   useEffect(() => {
     const fetchSubscription = async () => {
-      if (!session?.user?.email) return
+      if (!session?.user?.email || typeof window === 'undefined') return
 
       try {
         const response = await fetch(`/api/subscription?userId=${session.user.email}`)
@@ -3574,8 +3574,8 @@ function ChatPageContent() {
     fetchSubscription()
   }, [session?.user?.email])
 
-  // Get subscription badge info
-  const getSubscriptionBadge = () => {
+  // Get subscription badge info - computed value to prevent hydration issues
+  const subscriptionBadge = useMemo(() => {
     if (!subscription) return null
 
     const badges = {
@@ -3603,9 +3603,7 @@ function ChatPageContent() {
     }
 
     return badges[subscription.planId as keyof typeof badges] || null
-  }
-
-  const subscriptionBadge = getSubscriptionBadge()
+  }, [subscription])
 
   // Redirect to login if not authenticated
   useEffect(() => {
