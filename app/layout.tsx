@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import SessionProvider from './components/SessionProvider'
 import PerformanceMonitor from './components/PerformanceMonitor'
+import { Analytics } from '@vercel/analytics/next'
 
 // Optimize font loading
 const inter = Inter({ 
@@ -64,6 +65,7 @@ export default function RootLayout({
           {children}
         </SessionProvider>
         <PerformanceMonitor />
+        <Analytics />
       </body>
     </html>
   )
