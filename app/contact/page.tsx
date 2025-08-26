@@ -36,9 +36,19 @@ export default function ContactPage() {
     e.preventDefault()
     setIsLoading(true)
     
-    // Simulate form submission
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to send message')
+      }
+
       setIsSubmitted(true)
       setFormData({ name: '', email: '', subject: '', message: '' })
       
@@ -46,7 +56,12 @@ export default function ContactPage() {
       setTimeout(() => {
         setIsSubmitted(false)
       }, 5000)
-    }, 2000)
+    } catch (error) {
+      console.error('Contact form error:', error)
+      alert('Failed to send message. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const contactInfo = [
@@ -54,8 +69,8 @@ export default function ContactPage() {
       icon: Mail,
       title: 'Email Us',
       description: 'Get in touch via email',
-      value: 'hello@beloop.ai',
-      link: 'mailto:hello@beloop.ai'
+      value: 'beloopstore@gmail.com',
+      link: 'mailto:beloopstore@gmail.com'
     },
     {
       icon: Phone,

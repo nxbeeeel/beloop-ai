@@ -17,9 +17,46 @@ export interface ChatConversation {
   isActive: boolean
 }
 
-// Mock database for chat history
+// Mock database for chat history (in-memory with localStorage backup)
 export let chatConversations: ChatConversation[] = []
 export let chatMessages: ChatMessage[] = []
+
+// Load data from localStorage on module load
+if (typeof window !== 'undefined') {
+  try {
+    const savedConversations = localStorage.getItem('chatConversations')
+    const savedMessages = localStorage.getItem('chatMessages')
+    
+    if (savedConversations) {
+      chatConversations = JSON.parse(savedConversations).map((conv: any) => ({
+        ...conv,
+        createdAt: new Date(conv.createdAt),
+        updatedAt: new Date(conv.updatedAt)
+      }))
+    }
+    
+    if (savedMessages) {
+      chatMessages = JSON.parse(savedMessages).map((msg: any) => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp)
+      }))
+    }
+  } catch (error) {
+    console.error('Failed to load chat history from localStorage:', error)
+  }
+}
+
+// Save data to localStorage
+function saveToStorage() {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('chatConversations', JSON.stringify(chatConversations))
+      localStorage.setItem('chatMessages', JSON.stringify(chatMessages))
+    } catch (error) {
+      console.error('Failed to save chat history to localStorage:', error)
+    }
+  }
+}
 
 export function createConversation(userId: string, title?: string): ChatConversation {
   const conversation: ChatConversation = {
@@ -33,6 +70,7 @@ export function createConversation(userId: string, title?: string): ChatConversa
   }
 
   chatConversations.push(conversation)
+  saveToStorage()
   return conversation
 }
 
@@ -70,6 +108,7 @@ export function addMessage(userId: string, conversationId: string, role: 'user' 
     }
   }
 
+  saveToStorage()
   return message
 }
 
@@ -93,6 +132,7 @@ export function deleteConversation(conversationId: string): boolean {
   
   messageIndices.forEach(index => chatMessages.splice(index, 1))
   
+  saveToStorage()
   return true
 }
 
@@ -102,6 +142,7 @@ export function updateConversationTitle(conversationId: string, title: string): 
 
   conversation.title = title
   conversation.updatedAt = new Date()
+  saveToStorage()
   return true
 }
 
@@ -149,5 +190,42 @@ export function clearConversationHistory(userId: string, conversationId: string)
   conversation.messageCount = 0
   conversation.updatedAt = new Date()
   
+  saveToStorage()
   return true
+}
+
+// Client-side functions for localStorage management
+export function loadFromStorage() {
+  if (typeof window !== 'undefined') {
+    try {
+      const savedConversations = localStorage.getItem('chatConversations')
+      const savedMessages = localStorage.getItem('chatMessages')
+      
+      if (savedConversations) {
+        chatConversations = JSON.parse(savedConversations).map((conv: any) => ({
+          ...conv,
+          createdAt: new Date(conv.createdAt),
+          updatedAt: new Date(conv.updatedAt)
+        }))
+      }
+      
+      if (savedMessages) {
+        chatMessages = JSON.parse(savedMessages).map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }))
+      }
+    } catch (error) {
+      console.error('Failed to load chat history from localStorage:', error)
+    }
+  }
+}
+
+export function clearAllData() {
+  chatConversations = []
+  chatMessages = []
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('chatConversations')
+    localStorage.removeItem('chatMessages')
+  }
 }
