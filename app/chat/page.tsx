@@ -3600,13 +3600,35 @@ function ChatPageContent() {
     )
   }
 
+  // All state declarations must be at the top to prevent hydration mismatches
   const [messages, setMessages] = useState<Message[]>([])
   const [isClient, setIsClient] = useState(false)
+  const [inputValue, setInputValue] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+  const [conversations, setConversations] = useState<any[]>([])
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
+  const [showCodeEditor, setShowCodeEditor] = useState(false)
+  const [codeEditorData, setCodeEditorData] = useState<{
+    html: string
+    css: string
+    js: string
+    title: string
+  } | null>(null)
+  const [showGameLauncher, setShowGameLauncher] = useState(false)
+  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps' | 'snake' | 'tetris' | 'pong' | 'breakout' | 'flappy' | '2048' | 'hangman' | 'mathquiz' | 'whackamole' | 'racing' | 'dragracing' | 'offroad' | 'sudoku' | 'wordle' | 'bubblepop' | 'match3' | 'puzzle15'>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
   // Initialize messages after client-side hydration
   useEffect(() => {
     setIsClient(true)
-    if (session?.user?.name) {
+  }, [])
+
+  // Set initial message after hydration and session is available
+  useEffect(() => {
+    if (isClient && session?.user?.name && messages.length === 0) {
       setMessages([
         {
           id: '1',
@@ -3616,7 +3638,7 @@ function ChatPageContent() {
         }
       ])
     }
-  }, [session?.user?.name])
+  }, [isClient, session?.user?.name, messages.length])
 
   // Don't render if not hydrated
   if (!isClient) {
@@ -3641,24 +3663,6 @@ function ChatPageContent() {
       </div>
     )
   }
-  
-  const [inputValue, setInputValue] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [showHistory, setShowHistory] = useState(false)
-  const [conversations, setConversations] = useState<any[]>([])
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
-  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
-  const [showCodeEditor, setShowCodeEditor] = useState(false)
-  const [codeEditorData, setCodeEditorData] = useState<{
-    html: string
-    css: string
-    js: string
-    title: string
-  } | null>(null)
-  const [showGameLauncher, setShowGameLauncher] = useState(false)
-  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps' | 'snake' | 'tetris' | 'pong' | 'breakout' | 'flappy' | '2048' | 'hangman' | 'mathquiz' | 'whackamole' | 'racing' | 'dragracing' | 'offroad' | 'sudoku' | 'wordle' | 'bubblepop' | 'match3' | 'puzzle15'>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
