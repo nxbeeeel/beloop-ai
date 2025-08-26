@@ -13,22 +13,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if Gmail credentials are configured
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-      // Fallback: Log the contact form data
-      console.log('Contact Form Submission (Gmail not configured):', {
-        name,
-        email,
-        subject,
-        message,
-        timestamp: new Date().toISOString()
-      })
-      
-      return NextResponse.json(
-        { message: 'Contact form submitted successfully! (Email not configured)' },
-        { status: 200 }
-      )
-    }
+    // Log configuration for debugging
+    console.log('Gmail Configuration:', {
+      hasUser: !!process.env.GMAIL_USER,
+      hasPassword: !!process.env.GMAIL_APP_PASSWORD,
+      userLength: process.env.GMAIL_USER?.length,
+      passwordLength: process.env.GMAIL_APP_PASSWORD?.length
+    })
 
     // Create transporter for Gmail
     const transporter = nodemailer.createTransport({
@@ -38,6 +29,9 @@ export async function POST(request: NextRequest) {
         pass: process.env.GMAIL_APP_PASSWORD
       }
     })
+
+    // Verify transporter
+    await transporter.verify()
 
     // Email content
     const mailOptions = {
@@ -71,7 +65,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Send email
-    await transporter.sendMail(mailOptions)
+    const result = await transporter.sendMail(mailOptions)
+    console.log('Email sent successfully:', result.messageId)
 
     return NextResponse.json(
       { message: 'Email sent successfully' },
@@ -81,7 +76,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Contact form error:', error)
     return NextResponse.json(
-      { error: 'Failed to send email' },
+      { 
+        error: 'Failed to send email',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
