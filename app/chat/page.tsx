@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Send, 
@@ -32,6 +32,88 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import ErrorBoundary from '../components/ErrorBoundary'
+
+// Performance optimization: Memoized components
+const MemoizedMotionButton = memo(({ children, ...props }: any) => (
+  <motion.button {...props}>
+    {children}
+  </motion.button>
+))
+MemoizedMotionButton.displayName = 'MemoizedMotionButton'
+
+// Performance optimization: Lazy load game components
+const lazyLoadGame = (importFunc: () => Promise<any>) => {
+  const Component = React.lazy(importFunc)
+  return (props: any) => (
+    <React.Suspense fallback={
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+      </div>
+    }>
+      <Component {...props} />
+    </React.Suspense>
+  )
+}
+
+// Performance optimization: Debounced search
+const useDebounce = (value: string, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
+
+// Performance optimization: Virtual scrolling for large lists
+const VirtualList = memo(({ items, itemHeight, renderItem }: {
+  items: any[]
+  itemHeight: number
+  renderItem: (item: any, index: number) => React.ReactNode
+}) => {
+  const [scrollTop, setScrollTop] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const visibleItems = useMemo(() => {
+    const containerHeight = containerRef.current?.clientHeight || 400
+    const startIndex = Math.floor(scrollTop / itemHeight)
+    const endIndex = Math.min(startIndex + Math.ceil(containerHeight / itemHeight), items.length)
+    
+    return items.slice(startIndex, endIndex).map((item, index) => ({
+      item,
+      index: startIndex + index
+    }))
+  }, [items, scrollTop, itemHeight])
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop)
+  }, [])
+
+  return (
+    <div 
+      ref={containerRef}
+      className="overflow-auto"
+      style={{ height: '400px' }}
+      onScroll={handleScroll}
+    >
+      <div style={{ height: `${items.length * itemHeight}px`, position: 'relative' }}>
+        {visibleItems.map(({ item, index }) => (
+          <div key={index} style={{ position: 'absolute', top: index * itemHeight, height: itemHeight }}>
+            {renderItem(item, index)}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+})
+VirtualList.displayName = 'VirtualList'
 
 // Gemini-style Code Editor Component
 const CodeEditor = ({ html = '', css = '', js = '', title = 'Code Editor', onClose }: {
@@ -2899,8 +2981,8 @@ const Puzzle15Game = ({ onClose }: { onClose: () => void }) => {
   )
 }
 
-// Game Library selector
-const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, onClose: () => void }) => {
+// Game Library selector - Performance Optimized
+const GameLibrary = memo(({ onSelect, onClose }: { onSelect: (key: string) => void, onClose: () => void }) => {
   const { data: session } = useSession()
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -2908,13 +2990,15 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
   const [favorites, setFavorites] = useState<string[]>([])
   const [favoritesLoading, setFavoritesLoading] = useState(true)
 
+  // Performance optimization: Debounced search
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
+
   const categories = [
-    { key: 'all', name: '🎮 All Games', count: 50 },
-    { key: 'arcade', name: '🕹️ Arcade', count: 12 },
-    { key: 'puzzle', name: '🧩 Puzzle', count: 12 },
-    { key: 'strategy', name: '♟️ Strategy', count: 8 },
-    { key: 'action', name: '⚡ Action', count: 10 },
-    { key: 'educational', name: '📚 Educational', count: 6 },
+    { key: 'all', name: '🎮 All Games', count: 20 },
+    { key: 'arcade', name: '🕹️ Arcade', count: 4 },
+    { key: 'puzzle', name: '🧩 Puzzle', count: 7 },
+    { key: 'action', name: '⚡ Action', count: 4 },
+    { key: 'educational', name: '📚 Educational', count: 3 },
     { key: 'classic', name: '🏆 Classic', count: 2 }
   ]
 
@@ -2945,53 +3029,40 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
     { key: 'dragracing', name: 'Drag Racing', emoji: '🏁', desc: 'Quarter mile sprint', category: 'action', difficulty: 'Easy', players: '1', rating: 4.3 },
     { key: 'offroad', name: 'Off-Road Racing', emoji: '🚙', desc: 'Mud and terrain', category: 'action', difficulty: 'Hard', players: '1', rating: 4.4 },
     { key: 'sudoku', name: 'Sudoku', emoji: '📊', desc: 'Logic puzzle', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.7 },
-    { key: 'chess', name: 'Chess', emoji: '♟️', desc: 'Strategic battle', category: 'strategy', difficulty: 'Hard', players: '1-2', rating: 4.9 },
-    { key: 'checkers', name: 'Checkers', emoji: '🔴⚫', desc: 'Classic board game', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.1 },
     { key: 'wordle', name: 'Wordle', emoji: '📝', desc: 'Word guessing', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.6 },
-    { key: 'pacman', name: 'Pac-Man', emoji: '👻', desc: 'Eat dots, avoid ghosts', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.8 },
-    { key: 'asteroids', name: 'Asteroids', emoji: '☄️', desc: 'Space shooter', category: 'action', difficulty: 'Hard', players: '1', rating: 4.4 },
-    { key: 'spaceinvaders', name: 'Space Invaders', emoji: '👾', desc: 'Defend Earth', category: 'action', difficulty: 'Medium', players: '1', rating: 4.5 },
-    { key: 'bomberman', name: 'Bomberman', emoji: '💣', desc: 'Strategic bombing', category: 'strategy', difficulty: 'Medium', players: '1', rating: 4.2 },
-    { key: 'minesweeper', name: 'Minesweeper', emoji: '💥', desc: 'Find the mines', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.3 },
-    { key: 'connect4', name: 'Connect 4', emoji: '🔵🔴', desc: 'Connect the dots', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.4 },
-    { key: 'solitaire', name: 'Solitaire', emoji: '🃏', desc: 'Card puzzle', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.1 },
-    { key: 'mahjong', name: 'Mahjong', emoji: '🀄', desc: 'Tile matching', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.6 },
-    { key: 'crossword', name: 'Crossword', emoji: '📋', desc: 'Word puzzle', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.2 },
-    { key: 'typing', name: 'Speed Typing', emoji: '⌨️', desc: 'Type fast', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.3 },
-    { key: 'colorblast', name: 'Color Blast', emoji: '🎨', desc: 'Match colors', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.1 },
-    { key: 'jigsaw', name: 'Jigsaw Puzzle', emoji: '🧩', desc: 'Piece together', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.4 },
-    { key: 'simon', name: 'Simon Says', emoji: '🎵', desc: 'Memory sequence', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.2 },
-    { key: 'pinball', name: 'Pinball', emoji: '🎰', desc: 'Bounce the ball', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.3 },
-    { key: 'platformer', name: 'Platformer', emoji: '🏃', desc: 'Jump and run', category: 'action', difficulty: 'Hard', players: '1', rating: 4.4 },
-    { key: 'shooter', name: 'Shooter', emoji: '🎯', desc: 'Target practice', category: 'action', difficulty: 'Medium', players: '1', rating: 4.2 },
     { key: 'bubblepop', name: 'Bubble Pop', emoji: '🫧', desc: 'Pop the bubbles', category: 'arcade', difficulty: 'Easy', players: '1', rating: 4.0 },
     { key: 'match3', name: 'Match 3', emoji: '💎', desc: 'Match gems', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.1 },
-    { key: 'towerdefense', name: 'Tower Defense', emoji: '🏰', desc: 'Defend your base', category: 'strategy', difficulty: 'Hard', players: '1', rating: 4.5 },
     { key: 'puzzle15', name: '15 Puzzle', emoji: '🧩', desc: 'Slide tiles', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.3 },
-    { key: 'reversi', name: 'Reversi', emoji: '⚫⚪', desc: 'Flip tiles', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.2 },
-    { key: 'battleship', name: 'Battleship', emoji: '🚢', desc: 'Sink ships', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.1 },
-    { key: 'wordsearch', name: 'Word Search', emoji: '🔍', desc: 'Find words', category: 'educational', difficulty: 'Easy', players: '1', rating: 4.0 },
-    { key: 'spotdiff', name: 'Spot Difference', emoji: '👁️', desc: 'Find differences', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.1 },
-    { key: 'memorycard', name: 'Memory Cards', emoji: '🃏', desc: 'Match cards', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.2 },
-    { key: 'tictactoe4', name: '4x4 Tic-Tac-Toe', emoji: '❌⭕', desc: 'Bigger board', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.3 },
-    { key: 'snake2', name: 'Snake 2', emoji: '🐍', desc: 'Multiplayer snake', category: 'arcade', difficulty: 'Hard', players: '1-2', rating: 4.4 },
-    { key: 'tetris2', name: 'Tetris 2', emoji: '🧩', desc: 'Advanced tetris', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.6 },
-    { key: 'breakout2', name: 'Breakout 2', emoji: '🧱', desc: 'Power-ups', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.3 },
-    { key: 'flappy2', name: 'Flappy 2', emoji: '🐦', desc: 'Multiplayer', category: 'action', difficulty: 'Hard', players: '1-2', rating: 4.4 },
   ]
 
-  const filteredGames = games.filter(game => {
-    let matchesCategory = selectedCategory === 'all' || game.category === selectedCategory
-    
-    // Handle favorites category
-    if (selectedCategory === 'favorites') {
-      matchesCategory = favorites.includes(game.key)
-    }
-    
-    const matchesSearch = game.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         game.desc.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+  // Performance optimization: Memoized filtered games
+  const filteredGames = useMemo(() => {
+    return games.filter(game => {
+      let matchesCategory = selectedCategory === 'all' || game.category === selectedCategory
+      
+      // Handle favorites category
+      if (selectedCategory === 'favorites') {
+        matchesCategory = favorites.includes(game.key)
+      }
+      
+      const matchesSearch = game.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
+                           game.desc.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+      return matchesCategory && matchesSearch
+    })
+  }, [selectedCategory, favorites, debouncedSearchTerm])
+
+  // Performance optimization: Memoized callback functions
+  const handleCategorySelect = useCallback((category: string) => {
+    setSelectedCategory(category)
+  }, [])
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
+  }, [])
+
+  const handleGameHover = useCallback((gameKey: string | null) => {
+    setHoveredGame(gameKey)
+  }, [])
 
   // Fetch favorites on component mount
   useEffect(() => {
@@ -3208,8 +3279,9 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
       </div>
     </GameModal>
   )
-        
-}
+})
+
+GameLibrary.displayName = 'GameLibrary'
 
 // Enhanced Game Modal wrapper with better game area feel
 const GameModal = ({ title, onClose, children, showBackButton = false, onBack }: { 
@@ -3572,7 +3644,7 @@ function ChatPageContent() {
     title: string
   } | null>(null)
   const [showGameLauncher, setShowGameLauncher] = useState(false)
-  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps' | 'snake' | 'tetris' | 'pong' | 'breakout' | 'flappy' | '2048' | 'hangman' | 'mathquiz' | 'whackamole' | 'racing' | 'dragracing' | 'offroad' | 'sudoku' | 'chess' | 'checkers' | 'wordle' | 'pacman' | 'asteroids' | 'spaceinvaders' | 'bomberman' | 'minesweeper' | 'connect4' | 'solitaire' | 'mahjong' | 'crossword' | 'typing' | 'colorblast' | 'jigsaw' | 'simon' | 'pinball' | 'platformer' | 'shooter' | 'bubblepop' | 'match3' | 'towerdefense' | 'puzzle15' | 'reversi' | 'battleship' | 'wordsearch' | 'spotdiff' | 'memorycard' | 'tictactoe4' | 'snake2' | 'tetris2' | 'breakout2' | 'flappy2'>(null)
+  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps' | 'snake' | 'tetris' | 'pong' | 'breakout' | 'flappy' | '2048' | 'hangman' | 'mathquiz' | 'whackamole' | 'racing' | 'dragracing' | 'offroad' | 'sudoku' | 'wordle' | 'bubblepop' | 'match3' | 'puzzle15'>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -4307,36 +4379,9 @@ function ChatPageContent() {
                     chess: 'Chess',
                     checkers: 'Checkers',
                     wordle: 'Wordle',
-                    pacman: 'Pac-Man',
-                    asteroids: 'Asteroids',
-                    spaceinvaders: 'Space Invaders',
-                    bomberman: 'Bomberman',
-                    minesweeper: 'Minesweeper',
-                    connect4: 'Connect 4',
-                    solitaire: 'Solitaire',
-                    mahjong: 'Mahjong',
-                    crossword: 'Crossword',
-                    typing: 'Speed Typing',
-                    colorblast: 'Color Blast',
-                    jigsaw: 'Jigsaw Puzzle',
-                    simon: 'Simon Says',
-                    pinball: 'Pinball',
-                    platformer: 'Platformer',
-                    shooter: 'Space Shooter',
                     bubblepop: 'Bubble Pop',
                     match3: 'Match 3',
-                    towerdefense: 'Tower Defense',
-                    puzzle15: '15 Puzzle',
-                    reversi: 'Reversi',
-                    battleship: 'Battleship',
-                    wordsearch: 'Word Search',
-                    spotdiff: 'Spot Difference',
-                    memorycard: 'Memory Cards',
-                    tictactoe4: '4x4 Tic-Tac-Toe',
-                    snake2: 'Snake 2',
-                    tetris2: 'Tetris 2',
-                    breakout2: 'Breakout 2',
-                    flappy2: 'Flappy 2'
+                    puzzle15: '15 Puzzle'
                   }[activeGame] || 'Game' : 'Game'} 
                   onClose={() => setActiveGame(null)}
                   showBackButton={true}
@@ -4413,79 +4458,7 @@ function ChatPageContent() {
                     setActiveGame(null);
                     setShowGameLauncher(true);
                   }} />}
-                  {activeGame === 'chess' && <ChessGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'checkers' && <CheckersGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
                   {activeGame === 'wordle' && <WordleGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'pacman' && <PacmanGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'asteroids' && <AsteroidsGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'spaceinvaders' && <SpaceInvadersGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'bomberman' && <BombermanGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'minesweeper' && <MinesweeperGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'connect4' && <Connect4Game onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'solitaire' && <SolitaireGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'mahjong' && <MahjongGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'crossword' && <CrosswordGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'typing' && <TypingGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'colorblast' && <ColorBlastGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'jigsaw' && <JigsawGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'simon' && <SimonGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'pinball' && <PinballGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'platformer' && <PlatformerGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'shooter' && <ShooterGame onClose={() => {
                     setActiveGame(null);
                     setShowGameLauncher(true);
                   }} />}
@@ -4497,51 +4470,7 @@ function ChatPageContent() {
                     setActiveGame(null);
                     setShowGameLauncher(true);
                   }} />}
-                  {activeGame === 'towerdefense' && <TowerDefenseGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
                   {activeGame === 'puzzle15' && <Puzzle15Game onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'reversi' && <ReversiGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'battleship' && <BattleshipGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'wordsearch' && <WordSearchGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'spotdiff' && <SpotDiffGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'memorycard' && <MemoryCardGame onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'tictactoe4' && <TicTacToe4Game onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'snake2' && <Snake2Game onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'tetris2' && <Tetris2Game onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'breakout2' && <Breakout2Game onClose={() => {
-                    setActiveGame(null);
-                    setShowGameLauncher(true);
-                  }} />}
-                  {activeGame === 'flappy2' && <Flappy2Game onClose={() => {
                     setActiveGame(null);
                     setShowGameLauncher(true);
                   }} />}
@@ -4601,7 +4530,7 @@ function ChatPageContent() {
             
             {/* Tooltip */}
             <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              Play 50 Games!
+              Play 20 Games!
               <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </motion.button>
