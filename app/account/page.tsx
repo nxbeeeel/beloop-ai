@@ -32,6 +32,8 @@ export default function AccountPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [subscription, setSubscription] = useState<any>(null)
   const [subscriptionLoading, setSubscriptionLoading] = useState(true)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [favoritesLoading, setFavoritesLoading] = useState(true)
   
   const [profileData, setProfileData] = useState({
     firstName: 'John',
@@ -66,6 +68,30 @@ export default function AccountPage() {
     }
 
     fetchSubscription()
+  }, [session?.user?.email])
+
+  // Fetch favorites data
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!session?.user?.email) {
+        setFavoritesLoading(false)
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/favorites?userId=${session.user.email}`)
+        if (response.ok) {
+          const data = await response.json()
+          setFavorites(data.favorites || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch favorites:', error)
+      } finally {
+        setFavoritesLoading(false)
+      }
+    }
+
+    fetchFavorites()
   }, [session?.user?.email])
 
   // Get subscription badge info
@@ -123,8 +149,83 @@ export default function AccountPage() {
     setIsEditing(false)
   }
 
+  // Game information mapping
+  const getGameInfo = (gameKey: string) => {
+    const gameMap: { [key: string]: any } = {
+      tictactoe: { name: 'Tic‑Tac‑Toe', emoji: '❌⭕', desc: 'Play vs computer', difficulty: 'Easy', rating: 4.5 },
+      number: { name: 'Number Guess', emoji: '🎲', desc: 'Guess 1-100', difficulty: 'Easy', rating: 4.2 },
+      memory: { name: 'Memory', emoji: '🧠', desc: 'Match pairs', difficulty: 'Medium', rating: 4.3 },
+      rps: { name: 'Rock Paper Scissors', emoji: '✊✋✌️', desc: 'Best of luck', difficulty: 'Easy', rating: 4.0 },
+      snake: { name: 'Snake', emoji: '🐍', desc: 'Classic arcade', difficulty: 'Medium', rating: 4.7 },
+      tetris: { name: 'Tetris', emoji: '🧩', desc: 'Block puzzle', difficulty: 'Hard', rating: 4.8 },
+      pong: { name: 'Pong', emoji: '🏓', desc: 'Classic tennis', difficulty: 'Medium', rating: 4.6 },
+      breakout: { name: 'Breakout', emoji: '🧱', desc: 'Break the blocks', difficulty: 'Medium', rating: 4.4 },
+      flappy: { name: 'Flappy Bird', emoji: '🐦', desc: 'Navigate obstacles', difficulty: 'Hard', rating: 4.3 },
+      '2048': { name: '2048', emoji: '🔢', desc: 'Merge numbers', difficulty: 'Medium', rating: 4.5 },
+      sudoku: { name: 'Sudoku', emoji: '📊', desc: 'Logic puzzle', difficulty: 'Hard', rating: 4.7 },
+      chess: { name: 'Chess', emoji: '♟️', desc: 'Strategic battle', difficulty: 'Hard', rating: 4.9 },
+      checkers: { name: 'Checkers', emoji: '🔴⚫', desc: 'Classic board game', difficulty: 'Medium', rating: 4.1 },
+      hangman: { name: 'Hangman', emoji: '🪢', desc: 'Guess the word', difficulty: 'Easy', rating: 4.0 },
+      wordle: { name: 'Wordle', emoji: '📝', desc: 'Word guessing', difficulty: 'Medium', rating: 4.6 },
+      pacman: { name: 'Pac-Man', emoji: '👻', desc: 'Eat dots, avoid ghosts', difficulty: 'Medium', rating: 4.8 },
+      asteroids: { name: 'Asteroids', emoji: '☄️', desc: 'Space shooter', difficulty: 'Hard', rating: 4.4 },
+      spaceinvaders: { name: 'Space Invaders', emoji: '👾', desc: 'Defend Earth', difficulty: 'Medium', rating: 4.5 },
+      bomberman: { name: 'Bomberman', emoji: '💣', desc: 'Strategic bombing', difficulty: 'Medium', rating: 4.2 },
+      minesweeper: { name: 'Minesweeper', emoji: '💥', desc: 'Find the mines', difficulty: 'Medium', rating: 4.3 },
+      connect4: { name: 'Connect 4', emoji: '🔵🔴', desc: 'Connect the dots', difficulty: 'Medium', rating: 4.4 },
+      solitaire: { name: 'Solitaire', emoji: '🃏', desc: 'Card puzzle', difficulty: 'Easy', rating: 4.1 },
+      mahjong: { name: 'Mahjong', emoji: '🀄', desc: 'Tile matching', difficulty: 'Hard', rating: 4.6 },
+      crossword: { name: 'Crossword', emoji: '📋', desc: 'Word puzzle', difficulty: 'Medium', rating: 4.2 },
+      mathquiz: { name: 'Math Quiz', emoji: '🧮', desc: 'Test your skills', difficulty: 'Easy', rating: 4.0 },
+      typing: { name: 'Speed Typing', emoji: '⌨️', desc: 'Type fast', difficulty: 'Medium', rating: 4.3 },
+      colorblast: { name: 'Color Blast', emoji: '🎨', desc: 'Match colors', difficulty: 'Easy', rating: 4.1 },
+      jigsaw: { name: 'Jigsaw Puzzle', emoji: '🧩', desc: 'Piece together', difficulty: 'Medium', rating: 4.4 },
+      simon: { name: 'Simon Says', emoji: '🎵', desc: 'Memory sequence', difficulty: 'Medium', rating: 4.2 },
+      whackamole: { name: 'Whack-a-Mole', emoji: '🔨', desc: 'Quick reflexes', difficulty: 'Easy', rating: 4.0 },
+      pinball: { name: 'Pinball', emoji: '🎰', desc: 'Bounce the ball', difficulty: 'Medium', rating: 4.3 },
+      racing: { name: 'Racing', emoji: '🏎️', desc: 'Speed challenge', difficulty: 'Medium', rating: 4.5 },
+      platformer: { name: 'Platformer', emoji: '🏃', desc: 'Jump and run', difficulty: 'Hard', rating: 4.4 },
+      shooter: { name: 'Space Shooter', emoji: '🎯', desc: 'Target practice', difficulty: 'Medium', rating: 4.2 }
+    }
+    return gameMap[gameKey] || { name: 'Unknown Game', emoji: '🎮', desc: 'Game', difficulty: 'Medium', rating: 4.0 }
+  }
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Easy': return 'text-green-400'
+      case 'Medium': return 'text-yellow-400'
+      case 'Hard': return 'text-red-400'
+      default: return 'text-gray-400'
+    }
+  }
+
+  const removeFromFavorites = async (gameKey: string) => {
+    if (!session?.user?.email) return
+
+    try {
+      const response = await fetch('/api/favorites', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: session.user.email,
+          gameKey
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setFavorites(data.favorites)
+      }
+    } catch (error) {
+      console.error('Failed to remove from favorites:', error)
+    }
+  }
+
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
+    { id: 'favorites', label: 'Favorites', icon: Star },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'billing', label: 'Billing', icon: CreditCard },
     { id: 'notifications', label: 'Notifications', icon: Bell },
@@ -426,6 +527,86 @@ export default function AccountPage() {
                           </div>
                         </div>
                       </div>
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'favorites' && (
+                    <motion.div
+                      key="favorites"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
+                      className="card p-8"
+                    >
+                      <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-2xl font-bold text-white">Favorite Games</h2>
+                        <div className="flex items-center space-x-2">
+                          <Star className="w-6 h-6 text-yellow-400" />
+                          <span className="text-gray-400">{favorites.length} games</span>
+                        </div>
+                      </div>
+
+                      {favoritesLoading ? (
+                        <div className="text-center py-12">
+                          <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                          <p className="text-gray-400">Loading your favorites...</p>
+                        </div>
+                      ) : favorites.length === 0 ? (
+                        <div className="text-center py-12">
+                          <div className="w-16 h-16 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Star className="w-8 h-8 text-yellow-400" />
+                          </div>
+                          <h3 className="text-xl font-bold text-white mb-2">No Favorite Games Yet</h3>
+                          <p className="text-gray-400 mb-6">Start playing games and add them to your favorites to see them here!</p>
+                          <Link href="/chat">
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white hover:shadow-lg hover:shadow-cyan-400/25 transition-all duration-300"
+                            >
+                              Go to Games
+                            </motion.button>
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {favorites.map((gameKey) => {
+                            const gameInfo = getGameInfo(gameKey)
+                            return (
+                              <motion.div
+                                key={gameKey}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-6 bg-gray-900/50 rounded-xl border border-gray-700/50 hover:border-cyan-400/30 transition-all duration-300 group"
+                              >
+                                <div className="flex items-center justify-between mb-4">
+                                  <div className="text-3xl">{gameInfo.emoji}</div>
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => removeFromFavorites(gameKey)}
+                                    className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-all duration-300"
+                                    title="Remove from favorites"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </motion.button>
+                                </div>
+                                <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-400 transition-colors duration-300">
+                                  {gameInfo.name}
+                                </h3>
+                                <p className="text-gray-400 text-sm mb-4">{gameInfo.desc}</p>
+                                <div className="flex items-center justify-between">
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${getDifficultyColor(gameInfo.difficulty)} bg-gray-700/50`}>
+                                    {gameInfo.difficulty}
+                                  </span>
+                                  <span className="text-yellow-400 text-xs">⭐ {gameInfo.rating}</span>
+                                </div>
+                              </motion.div>
+                            )
+                          })}
+                        </div>
+                      )}
                     </motion.div>
                   )}
 
