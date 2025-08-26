@@ -724,10 +724,27 @@ function ChatPageContent() {
 
 
   const loadMessages = async (conversationId: string) => {
-    if (!session?.user?.email) return
+    if (!session?.user?.id) return
 
     try {
-      const response = await fetch(`/api/chat-history?userId=${session.user.email}&conversationId=${conversationId}`)
+      // Load from localStorage first for immediate response
+      const { loadFromStorage, getConversationMessages } = await import('@/app/lib/chatHistory')
+      loadFromStorage()
+      const localMessages = getConversationMessages(conversationId)
+      
+      if (localMessages.length > 0) {
+        const formattedMessages: Message[] = localMessages.map((msg: any) => ({
+          id: msg.id,
+          role: msg.role,
+          content: msg.content,
+          timestamp: new Date(msg.timestamp)
+        }))
+        setMessages(formattedMessages)
+        return
+      }
+      
+      // Fallback to API
+      const response = await fetch(`/api/chat-history?userId=${session.user.id}&conversationId=${conversationId}`)
       if (response.ok) {
         const data = await response.json()
         const loadedMessages = data.messages || []
@@ -748,14 +765,17 @@ function ChatPageContent() {
   }
 
   const startNewChat = () => {
-    setMessages([{
-      id: '1',
-      role: 'assistant',
-      content: `Hello ${session?.user?.name || 'there'}! I'm your AI assistant. How can I help you today?`,
-      timestamp: new Date()
-    }])
+    // Don't reset messages immediately - let the user start typing
+    setMessages([])
     setCurrentConversationId(null)
     setShowHistory(false)
+    
+    // Focus on input for immediate interaction
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus()
+      }
+    }, 100)
   }
 
   useEffect(() => {
@@ -771,8 +791,18 @@ function ChatPageContent() {
   useEffect(() => {
     if (session?.user?.id) {
       loadConversations()
+      
+      // If no conversations exist, show welcome message
+      if (conversations.length === 0 && messages.length === 0) {
+        setMessages([{
+          id: 'welcome',
+          role: 'assistant',
+          content: `Hello ${session.user.name || 'there'}! I'm your AI assistant. How can I help you today?`,
+          timestamp: new Date()
+        }])
+      }
     }
-  }, [session])
+  }, [session, conversations.length, messages.length])
 
   // Load messages for current conversation
   useEffect(() => {
@@ -849,10 +879,19 @@ function ChatPageContent() {
     if (!session?.user?.id) return
     
     try {
+      // Load from localStorage first for immediate response
+      const { loadFromStorage, getUserConversations } = await import('@/app/lib/chatHistory')
+      loadFromStorage()
+      const localConversations = getUserConversations(session.user.id)
+      setConversations(localConversations)
+      
+      // Also try to load from API as backup
       const response = await fetch(`/api/chat-history?userId=${session.user.id}`)
       if (response.ok) {
         const data = await response.json()
-        setConversations(data.conversations || [])
+        if (data.conversations && data.conversations.length > 0) {
+          setConversations(data.conversations)
+        }
       }
     } catch (error) {
       console.error('Failed to load conversations:', error)
@@ -1040,19 +1079,39 @@ function ChatPageContent() {
 
             {/* User Profile */}
             <div className="flex items-center space-x-2 ml-4 pl-4 border-l border-gray-700/50">
-              {session.user?.image ? (
-                <img 
-                  src={session.user.image} 
-                  alt={session.user.name || 'User'} 
-                  className="w-8 h-8 rounded-full"
-                />
-              ) : (
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-              )}
+              <div className="relative">
+                {session.user?.image ? (
+                  <img 
+                    src={session.user.image} 
+                    alt={session.user.name || 'User'} 
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                )}
+                
+                {/* Premium Subscription Badge */}
+                {subscriptionBadge && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className={`absolute -top-1 -right-1 w-4 h-4 rounded-full ${subscriptionBadge.bgColor} ${subscriptionBadge.borderColor} border-2 flex items-center justify-center shadow-lg`}
+                  >
+                    <subscriptionBadge.icon className="w-2 h-2 text-white" />
+                  </motion.div>
+                )}
+              </div>
               <div className="hidden sm:block">
-                <p className="text-sm font-medium text-white">{session.user?.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-white">{session.user?.name}</p>
+                  {subscriptionBadge && (
+                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${subscriptionBadge.bgColor} ${subscriptionBadge.borderColor} border`}>
+                      {subscriptionBadge.label}
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-gray-400">{session.user?.email}</p>
               </div>
               <Link 

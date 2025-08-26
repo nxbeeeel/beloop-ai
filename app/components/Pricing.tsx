@@ -20,6 +20,7 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react'
+import PaymentModal from './PaymentModal'
 
 const plans = [
   {
@@ -119,15 +120,11 @@ export default function Pricing() {
 
     setSelectedPlan(plan)
     setShowPaymentModal(true)
-    setPaymentStatus('idle')
-    setErrorMessage('')
   }
 
-  const processPayment = async () => {
+  const handlePaymentSuccess = async () => {
     if (!selectedPlan || !session?.user?.email) return
 
-    setPaymentStatus('processing')
-    
     try {
       const amount = billingPeriod === 'year' 
         ? Math.round(selectedPlan.price * 12 * 0.8 * 100) // Convert to cents and apply 20% discount
@@ -147,21 +144,14 @@ export default function Pricing() {
       })
 
       if (!response.ok) {
-        throw new Error('Payment failed')
+        throw new Error('Failed to create subscription')
       }
 
-      const result = await response.json()
-      setPaymentStatus('success')
-      
-      // Close modal after 2 seconds
-      setTimeout(() => {
-        setShowPaymentModal(false)
-        setPaymentStatus('idle')
-      }, 2000)
+      // Refresh the page to update subscription status
+      window.location.reload()
 
     } catch (error) {
-      setPaymentStatus('error')
-      setErrorMessage(error instanceof Error ? error.message : 'Payment failed')
+      console.error('Failed to create subscription:', error)
     }
   }
 
@@ -365,6 +355,15 @@ export default function Pricing() {
           </div>
         </motion.div>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        plan={selectedPlan}
+        billingPeriod={billingPeriod}
+        onSuccess={handlePaymentSuccess}
+      />
     </section>
   )
 }
