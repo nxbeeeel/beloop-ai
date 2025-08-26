@@ -1,82 +1,68 @@
 'use client'
 
-import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Send, 
   Loader2,
-  Sparkles,
-  History,
-  Trash2,
-  Plus,
-  MessageSquare,
   Bot,
   User,
   Clock,
-  Search,
   Copy,
   Check,
-  Crown,
-  Zap,
-  Star,
-  Diamond,
-  Eye,
-  Code,
-  Monitor,
-  X,
-  Play,
-  ArrowLeft,
-  Trophy
+  Plus
 } from 'lucide-react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import ErrorBoundary from '../components/ErrorBoundary'
-import dynamic from 'next/dynamic'
 
-// Force client-side only rendering to prevent hydration issues
-const ChatPageContent = dynamic(() => Promise.resolve(ChatPageContentComponent), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-        <p className="text-gray-400">Loading...</p>
-      </div>
-    </div>
-  )
-})
+// Simple client-side session check
+function useClientSession() {
+  const [session, setSession] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-function ChatPageContentComponent() {
-  const { data: session, status } = useSession()
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await fetch('/api/auth/session')
+        if (response.ok) {
+          const data = await response.json()
+          setSession(data)
+        }
+      } catch (error) {
+        console.error('Session check failed:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkSession()
+  }, [])
+
+  return { session, loading }
+}
+
+function ChatPageContent() {
   const router = useRouter()
+  const { session, loading } = useClientSession()
   
   // All state declarations at the top
   const [messages, setMessages] = useState<any[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [showHistory, setShowHistory] = useState(false)
-  const [conversations, setConversations] = useState<any[]>([])
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
-  const [showCodeEditor, setShowCodeEditor] = useState(false)
-  const [codeEditorData, setCodeEditorData] = useState<any>(null)
-  const [showGameLauncher, setShowGameLauncher] = useState(false)
-  const [activeGame, setActiveGame] = useState<string | null>(null)
   const [subscription, setSubscription] = useState<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (status === 'loading') return
-    if (!session) {
+    if (!loading && !session) {
       router.push('/login')
     }
-  }, [session, status, router])
+  }, [session, loading, router])
 
   // Show loading while checking authentication
-  if (status === 'loading') {
+  if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
@@ -116,7 +102,7 @@ function ChatPageContentComponent() {
   // Fetch subscription data
   useEffect(() => {
     const fetchSubscription = async () => {
-      if (!session?.user?.email || typeof window === 'undefined') return
+      if (!session?.user?.email) return
 
       try {
         const response = await fetch(`/api/subscription?userId=${session.user.email}`)
@@ -132,37 +118,6 @@ function ChatPageContentComponent() {
 
     fetchSubscription()
   }, [session?.user?.email])
-
-  // Get subscription badge info - computed value to prevent hydration issues
-  const subscriptionBadge = useMemo(() => {
-    if (!subscription) return null
-
-    const badges = {
-      'pro': {
-        icon: Zap,
-        color: 'from-blue-400 to-purple-400',
-        bgColor: 'bg-blue-500/20',
-        borderColor: 'border-blue-400/50',
-        label: 'Pro'
-      },
-      'premium': {
-        icon: Crown,
-        color: 'from-silver-300 to-silver-100',
-        bgColor: 'bg-gradient-to-br from-silver-400/30 to-silver-600/20',
-        borderColor: 'border-silver-300/60',
-        label: 'Premium'
-      },
-      'enterprise': {
-        icon: Diamond,
-        color: 'from-purple-400 to-pink-400',
-        bgColor: 'bg-purple-500/20',
-        borderColor: 'border-purple-400/50',
-        label: 'Enterprise'
-      }
-    }
-
-    return badges[subscription.planId as keyof typeof badges] || null
-  }, [subscription])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -195,8 +150,7 @@ function ChatPageContentComponent() {
         },
         body: JSON.stringify({
           message: inputValue,
-          userId: session.user.id,
-          conversationId: currentConversationId
+          userId: session.user.id
         }),
       })
 
@@ -209,10 +163,6 @@ function ChatPageContentComponent() {
           timestamp: new Date()
         }
         setMessages(prev => [...prev, assistantMessage])
-        
-        if (data.conversationId && !currentConversationId) {
-          setCurrentConversationId(data.conversationId)
-        }
       } else {
         throw new Error('Failed to send message')
       }
@@ -232,8 +182,6 @@ function ChatPageContentComponent() {
 
   const startNewChat = () => {
     setMessages([])
-    setCurrentConversationId(null)
-    setShowHistory(false)
   }
 
   const copyMessage = async (messageId: string) => {
@@ -258,23 +206,14 @@ function ChatPageContentComponent() {
             <Link href="/" className="text-2xl font-bold text-cyan-400">
               Beloop AI
             </Link>
-            {subscriptionBadge && (
-              <div className={`flex items-center space-x-2 px-3 py-1 rounded-full border ${subscriptionBadge.borderColor} ${subscriptionBadge.bgColor}`}>
-                <subscriptionBadge.icon className={`w-4 h-4 bg-gradient-to-r ${subscriptionBadge.color} bg-clip-text text-transparent`} />
-                <span className="text-xs font-medium text-gray-200">{subscriptionBadge.label}</span>
+            {subscription && (
+              <div className="flex items-center space-x-2 px-3 py-1 rounded-full border border-cyan-400/50 bg-cyan-500/20">
+                <span className="text-xs font-medium text-gray-200">Premium</span>
               </div>
             )}
           </div>
           
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setShowGameLauncher(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all duration-300"
-            >
-              <Play className="w-4 h-4" />
-              <span>Games</span>
-            </button>
-            
             <Link href="/account" className="flex items-center space-x-2 px-4 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all duration-300">
               <User className="w-4 h-4" />
               <span>Account</span>
@@ -379,48 +318,10 @@ function ChatPageContentComponent() {
           </div>
         </div>
       </div>
-
-      {/* Game Launcher Modal */}
-      <AnimatePresence>
-        {showGameLauncher && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowGameLauncher(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-            />
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-gray-900 rounded-xl p-6 max-w-md w-full"
-              >
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-white mb-4">🎮 Game Library</h2>
-                  <p className="text-gray-400 mb-6">Games coming soon!</p>
-                  <button
-                    onClick={() => setShowGameLauncher(false)}
-                    className="px-6 py-3 bg-cyan-500 rounded-lg hover:bg-cyan-600 transition-all duration-300"
-                  >
-                    Close
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   )
 }
 
 export default function ChatPage() {
-  return (
-    <ErrorBoundary>
-      <ChatPageContent />
-    </ErrorBoundary>
-  )
+  return <ChatPageContent />
 }
