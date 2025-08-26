@@ -2250,6 +2250,655 @@ const OffRoadRacingGame = ({ onClose }: { onClose: () => void }) => {
   )
 }
 
+// Sudoku Game
+const SudokuGame = ({ onClose }: { onClose: () => void }) => {
+  const [board, setBoard] = useState<number[][]>([])
+  const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null)
+  const [gameOver, setGameOver] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  const generateSudoku = () => {
+    // Simple 4x4 Sudoku for demo
+    const puzzle = [
+      [1, 2, 3, 4],
+      [3, 4, 1, 2],
+      [2, 1, 4, 3],
+      [4, 3, 2, 1]
+    ]
+    setBoard(puzzle)
+    setIsPlaying(true)
+    setGameOver(false)
+  }
+
+  const handleCellClick = (row: number, col: number) => {
+    setSelectedCell([row, col])
+  }
+
+  const handleNumberInput = (num: number) => {
+    if (!selectedCell || !isPlaying) return
+    const [row, col] = selectedCell
+    const newBoard = [...board]
+    newBoard[row][col] = num
+    setBoard(newBoard)
+  }
+
+  const checkWin = () => {
+    // Simple win check for 4x4
+    const isValid = board.every(row => 
+      row.every(cell => cell >= 1 && cell <= 4)
+    )
+    if (isValid) {
+      setGameOver(true)
+    }
+  }
+
+  useEffect(() => {
+    if (isPlaying) {
+      checkWin()
+    }
+  }, [board, isPlaying])
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">📊 Sudoku</h2>
+        <div className="text-lg text-gray-300 mb-4">
+          Fill the grid with numbers 1-4
+        </div>
+      </div>
+
+      {!isPlaying && !gameOver ? (
+        <div className="text-center">
+          <div className="text-lg text-gray-300 mb-6">
+            Complete the 4x4 Sudoku puzzle!
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={generateSudoku}
+            className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold text-lg"
+          >
+            Start Puzzle
+          </motion.button>
+        </div>
+      ) : gameOver ? (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">🎉 Puzzle Complete!</div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={generateSudoku}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              New Puzzle
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full max-w-md">
+          {/* Sudoku Grid */}
+          <div className="grid grid-cols-4 gap-1 mb-6 bg-gray-700 p-2 rounded-lg">
+            {board.map((row, rowIndex) => 
+              row.map((cell, colIndex) => (
+                <button
+                  key={`${rowIndex}-${colIndex}`}
+                  onClick={() => handleCellClick(rowIndex, colIndex)}
+                  className={`w-12 h-12 border border-gray-600 rounded flex items-center justify-center text-lg font-bold transition-all duration-200 ${
+                    selectedCell?.[0] === rowIndex && selectedCell?.[1] === colIndex
+                      ? 'bg-cyan-500 text-white'
+                      : 'bg-gray-800 text-white hover:bg-gray-700'
+                  }`}
+                >
+                  {cell || ''}
+                </button>
+              ))
+            )}
+          </div>
+
+          {/* Number Input */}
+          <div className="grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4].map(num => (
+              <motion.button
+                key={num}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleNumberInput(num)}
+                className="w-12 h-12 bg-gray-700 border border-gray-600 rounded-lg text-white font-bold text-lg hover:bg-gray-600 transition-all duration-200"
+              >
+                {num}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Wordle Game
+const WordleGame = ({ onClose }: { onClose: () => void }) => {
+  const words = ['REACT', 'GAMES', 'FUNNY', 'SMART', 'QUICK', 'BRAVE', 'HAPPY', 'PEACE', 'DREAM', 'SPACE']
+  const [word, setWord] = useState(words[Math.floor(Math.random() * words.length)])
+  const [guesses, setGuesses] = useState<string[]>([])
+  const [currentGuess, setCurrentGuess] = useState('')
+  const [gameOver, setGameOver] = useState(false)
+  const [won, setWon] = useState(false)
+
+  const maxGuesses = 6
+
+  const handleKeyPress = (e: KeyboardEvent) => {
+    if (gameOver) return
+
+    if (e.key === 'Enter' && currentGuess.length === 5) {
+      const newGuesses = [...guesses, currentGuess]
+      setGuesses(newGuesses)
+      setCurrentGuess('')
+
+      if (currentGuess === word) {
+        setWon(true)
+        setGameOver(true)
+      } else if (newGuesses.length >= maxGuesses) {
+        setGameOver(true)
+      }
+    } else if (e.key === 'Backspace') {
+      setCurrentGuess(prev => prev.slice(0, -1))
+    } else if (e.key.match(/^[A-Za-z]$/) && currentGuess.length < 5) {
+      setCurrentGuess(prev => prev + e.key.toUpperCase())
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [currentGuess, gameOver])
+
+  const getLetterColor = (letter: string, position: number, guess: string) => {
+    if (word[position] === letter) return 'bg-green-500'
+    if (word.includes(letter)) return 'bg-yellow-500'
+    return 'bg-gray-600'
+  }
+
+  const resetGame = () => {
+    setWord(words[Math.floor(Math.random() * words.length)])
+    setGuesses([])
+    setCurrentGuess('')
+    setGameOver(false)
+    setWon(false)
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">📝 Wordle</h2>
+        <div className="text-lg text-gray-300 mb-4">
+          Guess the 5-letter word in 6 tries
+        </div>
+      </div>
+
+      {gameOver ? (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">
+            {won ? '🎉 You Won!' : '💀 Game Over!'}
+          </div>
+          <div className="text-lg text-gray-300 mb-6">
+            The word was: <span className="text-cyan-400 font-bold">{word}</span>
+          </div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={resetGame}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              Play Again
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full max-w-md">
+          {/* Wordle Grid */}
+          <div className="space-y-2 mb-6">
+            {[...Array(maxGuesses)].map((_, rowIndex) => (
+              <div key={rowIndex} className="flex gap-2 justify-center">
+                {[...Array(5)].map((_, colIndex) => {
+                  const guess = guesses[rowIndex] || ''
+                  const letter = guess[colIndex] || ''
+                  const isCurrentRow = rowIndex === guesses.length
+                  const currentLetter = isCurrentRow ? currentGuess[colIndex] || '' : ''
+                  
+                  return (
+                    <div
+                      key={colIndex}
+                      className={`w-12 h-12 border-2 rounded flex items-center justify-center text-xl font-bold ${
+                        guess
+                          ? `${getLetterColor(letter, colIndex, guess)} text-white border-transparent`
+                          : isCurrentRow && currentLetter
+                          ? 'bg-gray-700 text-white border-gray-500'
+                          : 'bg-gray-800 text-white border-gray-600'
+                      }`}
+                    >
+                      {guess ? letter : currentLetter}
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+
+          {/* Instructions */}
+          <div className="text-center text-sm text-gray-400">
+            Type your guess and press Enter
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Bubble Pop Game
+const BubblePopGame = ({ onClose }: { onClose: () => void }) => {
+  const [bubbles, setBubbles] = useState<Array<{id: number, x: number, y: number, size: number, color: string}>>([])
+  const [score, setScore] = useState(0)
+  const [timeLeft, setTimeLeft] = useState(30)
+  const [gameOver, setGameOver] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500']
+
+  const startGame = () => {
+    setIsPlaying(true)
+    setScore(0)
+    setTimeLeft(30)
+    setGameOver(false)
+    setBubbles([])
+  }
+
+  const createBubble = () => {
+    const newBubble = {
+      id: Date.now(),
+      x: Math.random() * 80 + 10,
+      y: Math.random() * 60 + 10,
+      size: Math.random() * 20 + 20,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    }
+    setBubbles(prev => [...prev, newBubble])
+  }
+
+  const popBubble = (id: number) => {
+    setBubbles(prev => prev.filter(bubble => bubble.id !== id))
+    setScore(prev => prev + 10)
+  }
+
+  useEffect(() => {
+    if (!isPlaying || gameOver) return
+
+    const gameTimer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          setGameOver(true)
+          setIsPlaying(false)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    const bubbleTimer = setInterval(() => {
+      if (!gameOver) {
+        createBubble()
+      } else {
+        clearInterval(bubbleTimer)
+      }
+    }, 1000)
+
+    return () => {
+      clearInterval(gameTimer)
+      clearInterval(bubbleTimer)
+    }
+  }, [isPlaying, gameOver])
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">🫧 Bubble Pop</h2>
+        <div className="text-lg text-gray-300 mb-4">
+          Score: <span className="text-cyan-400 font-bold">{score}</span> | 
+          Time: <span className="text-yellow-400 font-bold">{timeLeft}s</span>
+        </div>
+      </div>
+
+      {!isPlaying && !gameOver ? (
+        <div className="text-center">
+          <div className="text-lg text-gray-300 mb-6">
+            Click bubbles to pop them and score points!
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={startGame}
+            className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold text-lg"
+          >
+            Start Popping
+          </motion.button>
+        </div>
+      ) : gameOver ? (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">🎯 Game Over!</div>
+          <div className="text-lg text-gray-300 mb-6">
+            Final Score: <span className="text-cyan-400 font-bold">{score}</span>
+          </div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={startGame}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              Play Again
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="relative w-full max-w-md h-64 bg-gradient-to-b from-blue-900 to-blue-700 rounded-xl border-2 border-blue-600 overflow-hidden">
+          {bubbles.map(bubble => (
+            <motion.button
+              key={bubble.id}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => popBubble(bubble.id)}
+              className={`absolute rounded-full ${bubble.color} shadow-lg hover:shadow-xl transition-all duration-200`}
+              style={{
+                left: `${bubble.x}%`,
+                top: `${bubble.y}%`,
+                width: `${bubble.size}px`,
+                height: `${bubble.size}px`,
+                transform: 'translate(-50%, -50%)'
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Match 3 Game
+const Match3Game = ({ onClose }: { onClose: () => void }) => {
+  const [board, setBoard] = useState<string[][]>([])
+  const [score, setScore] = useState(0)
+  const [timeLeft, setTimeLeft] = useState(60)
+  const [gameOver, setGameOver] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  const colors = ['🔴', '🔵', '🟢', '🟡', '🟣', '🟠']
+
+  const initializeBoard = () => {
+    const newBoard = []
+    for (let i = 0; i < 8; i++) {
+      const row = []
+      for (let j = 0; j < 8; j++) {
+        row.push(colors[Math.floor(Math.random() * colors.length)])
+      }
+      newBoard.push(row)
+    }
+    setBoard(newBoard)
+  }
+
+  const startGame = () => {
+    setIsPlaying(true)
+    setScore(0)
+    setTimeLeft(60)
+    setGameOver(false)
+    initializeBoard()
+  }
+
+  const handleTileClick = (row: number, col: number) => {
+    if (!isPlaying || gameOver) return
+
+    // Simple match logic - just remove the clicked tile and add score
+    const newBoard = [...board]
+    newBoard[row][col] = colors[Math.floor(Math.random() * colors.length)]
+    setBoard(newBoard)
+    setScore(prev => prev + 10)
+  }
+
+  useEffect(() => {
+    if (!isPlaying || gameOver) return
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          setGameOver(true)
+          setIsPlaying(false)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [isPlaying, gameOver])
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">💎 Match 3</h2>
+        <div className="text-lg text-gray-300 mb-4">
+          Score: <span className="text-cyan-400 font-bold">{score}</span> | 
+          Time: <span className="text-yellow-400 font-bold">{timeLeft}s</span>
+        </div>
+      </div>
+
+      {!isPlaying && !gameOver ? (
+        <div className="text-center">
+          <div className="text-lg text-gray-300 mb-6">
+            Click tiles to match and score points!
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={startGame}
+            className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold text-lg"
+          >
+            Start Matching
+          </motion.button>
+        </div>
+      ) : gameOver ? (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">🎯 Game Over!</div>
+          <div className="text-lg text-gray-300 mb-6">
+            Final Score: <span className="text-cyan-400 font-bold">{score}</span>
+          </div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={startGame}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              Play Again
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full max-w-md">
+          <div className="grid grid-cols-8 gap-1 bg-gray-700 p-2 rounded-lg">
+            {board.map((row, rowIndex) => 
+              row.map((tile, colIndex) => (
+                <motion.button
+                  key={`${rowIndex}-${colIndex}`}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => handleTileClick(rowIndex, colIndex)}
+                  className="w-8 h-8 bg-gray-800 rounded flex items-center justify-center text-sm hover:bg-gray-600 transition-all duration-200"
+                >
+                  {tile}
+                </motion.button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// 15 Puzzle Game
+const Puzzle15Game = ({ onClose }: { onClose: () => void }) => {
+  const [board, setBoard] = useState<number[]>([])
+  const [moves, setMoves] = useState(0)
+  const [gameOver, setGameOver] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  const initializeBoard = () => {
+    const numbers = Array.from({length: 15}, (_, i) => i + 1)
+    numbers.push(0) // Empty space
+    // Shuffle the array
+    for (let i = numbers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [numbers[i], numbers[j]] = [numbers[j], numbers[i]]
+    }
+    setBoard(numbers)
+    setMoves(0)
+    setIsPlaying(true)
+    setGameOver(false)
+  }
+
+  const handleTileClick = (index: number) => {
+    if (!isPlaying || gameOver) return
+
+    const emptyIndex = board.indexOf(0)
+    const row = Math.floor(index / 4)
+    const emptyRow = Math.floor(emptyIndex / 4)
+    const col = index % 4
+    const emptyCol = emptyIndex % 4
+
+    // Check if tiles are adjacent
+    if ((Math.abs(row - emptyRow) === 1 && col === emptyCol) || 
+        (Math.abs(col - emptyCol) === 1 && row === emptyRow)) {
+      const newBoard = [...board]
+      newBoard[emptyIndex] = board[index]
+      newBoard[index] = 0
+      setBoard(newBoard)
+      setMoves(prev => prev + 1)
+
+      // Check win condition
+      const isWin = newBoard.every((num, i) => {
+        if (i === 15) return num === 0
+        return num === i + 1
+      })
+      if (isWin) {
+        setGameOver(true)
+      }
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-4">🧩 15 Puzzle</h2>
+        <div className="text-lg text-gray-300 mb-4">
+          Moves: <span className="text-cyan-400 font-bold">{moves}</span>
+        </div>
+      </div>
+
+      {!isPlaying && !gameOver ? (
+        <div className="text-center">
+          <div className="text-lg text-gray-300 mb-6">
+            Slide tiles to arrange numbers 1-15 in order!
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={initializeBoard}
+            className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold text-lg"
+          >
+            Start Puzzle
+          </motion.button>
+        </div>
+      ) : gameOver ? (
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-4">🎉 Puzzle Complete!</div>
+          <div className="text-lg text-gray-300 mb-6">
+            Moves: <span className="text-cyan-400 font-bold">{moves}</span>
+          </div>
+          <div className="space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={initializeBoard}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-xl text-white font-semibold"
+            >
+              New Puzzle
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+            >
+              Back to Library
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full max-w-md">
+          <div className="grid grid-cols-4 gap-1 bg-gray-700 p-2 rounded-lg">
+            {board.map((num, index) => (
+              <motion.button
+                key={index}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleTileClick(index)}
+                className={`w-16 h-16 rounded flex items-center justify-center text-lg font-bold transition-all duration-200 ${
+                  num === 0 
+                    ? 'bg-gray-800 text-transparent' 
+                    : 'bg-cyan-500 text-white hover:bg-cyan-400'
+                }`}
+              >
+                {num || ''}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Game Library selector
 const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, onClose: () => void }) => {
   const { data: session } = useSession()
@@ -2260,14 +2909,14 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
   const [favoritesLoading, setFavoritesLoading] = useState(true)
 
   const categories = [
-    { key: 'all', name: '🎮 All Games', count: 33 },
-    { key: 'favorites', name: '⭐ Favorites', count: favorites.length },
-    { key: 'arcade', name: '🕹️ Arcade', count: 8 },
-    { key: 'puzzle', name: '🧩 Puzzle', count: 6 },
-    { key: 'strategy', name: '♟️ Strategy', count: 4 },
-    { key: 'action', name: '⚡ Action', count: 8 },
-    { key: 'educational', name: '📚 Educational', count: 4 },
-    { key: 'classic', name: '🏆 Classic', count: 3 }
+    { key: 'all', name: '🎮 All Games', count: 50 },
+    ...(session?.user?.email ? [{ key: 'favorites', name: '⭐ Favorites', count: favorites.length }] : []),
+    { key: 'arcade', name: '🕹️ Arcade', count: 12 },
+    { key: 'puzzle', name: '🧩 Puzzle', count: 12 },
+    { key: 'strategy', name: '♟️ Strategy', count: 8 },
+    { key: 'action', name: '⚡ Action', count: 10 },
+    { key: 'educational', name: '📚 Educational', count: 6 },
+    { key: 'classic', name: '🏆 Classic', count: 2 }
   ]
 
   const games = [
@@ -2281,10 +2930,15 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
     { key: 'breakout', name: 'Breakout', emoji: '🧱', desc: 'Break the blocks', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.4 },
     { key: 'flappy', name: 'Flappy Bird', emoji: '🐦', desc: 'Navigate obstacles', category: 'action', difficulty: 'Hard', players: '1', rating: 4.3 },
     { key: '2048', name: '2048', emoji: '🔢', desc: 'Merge numbers', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.5 },
+    { key: 'hangman', name: 'Hangman', emoji: '🪢', desc: 'Guess the word', category: 'educational', difficulty: 'Easy', players: '1', rating: 4.0 },
+    { key: 'mathquiz', name: 'Math Quiz', emoji: '🧮', desc: 'Test your skills', category: 'educational', difficulty: 'Easy', players: '1', rating: 4.0 },
+    { key: 'whackamole', name: 'Whack-a-Mole', emoji: '🔨', desc: 'Quick reflexes', category: 'action', difficulty: 'Easy', players: '1', rating: 4.0 },
+    { key: 'racing', name: 'Circuit Racing', emoji: '🏎️', desc: 'Speed challenge', category: 'action', difficulty: 'Medium', players: '1', rating: 4.5 },
+    { key: 'dragracing', name: 'Drag Racing', emoji: '🏁', desc: 'Quarter mile sprint', category: 'action', difficulty: 'Easy', players: '1', rating: 4.3 },
+    { key: 'offroad', name: 'Off-Road Racing', emoji: '🚙', desc: 'Mud and terrain', category: 'action', difficulty: 'Hard', players: '1', rating: 4.4 },
     { key: 'sudoku', name: 'Sudoku', emoji: '📊', desc: 'Logic puzzle', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.7 },
     { key: 'chess', name: 'Chess', emoji: '♟️', desc: 'Strategic battle', category: 'strategy', difficulty: 'Hard', players: '1-2', rating: 4.9 },
     { key: 'checkers', name: 'Checkers', emoji: '🔴⚫', desc: 'Classic board game', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.1 },
-    { key: 'hangman', name: 'Hangman', emoji: '🪢', desc: 'Guess the word', category: 'educational', difficulty: 'Easy', players: '1', rating: 4.0 },
     { key: 'wordle', name: 'Wordle', emoji: '📝', desc: 'Word guessing', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.6 },
     { key: 'pacman', name: 'Pac-Man', emoji: '👻', desc: 'Eat dots, avoid ghosts', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.8 },
     { key: 'asteroids', name: 'Asteroids', emoji: '☄️', desc: 'Space shooter', category: 'action', difficulty: 'Hard', players: '1', rating: 4.4 },
@@ -2295,18 +2949,27 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
     { key: 'solitaire', name: 'Solitaire', emoji: '🃏', desc: 'Card puzzle', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.1 },
     { key: 'mahjong', name: 'Mahjong', emoji: '🀄', desc: 'Tile matching', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.6 },
     { key: 'crossword', name: 'Crossword', emoji: '📋', desc: 'Word puzzle', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.2 },
-    { key: 'mathquiz', name: 'Math Quiz', emoji: '🧮', desc: 'Test your skills', category: 'educational', difficulty: 'Easy', players: '1', rating: 4.0 },
     { key: 'typing', name: 'Speed Typing', emoji: '⌨️', desc: 'Type fast', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.3 },
     { key: 'colorblast', name: 'Color Blast', emoji: '🎨', desc: 'Match colors', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.1 },
     { key: 'jigsaw', name: 'Jigsaw Puzzle', emoji: '🧩', desc: 'Piece together', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.4 },
     { key: 'simon', name: 'Simon Says', emoji: '🎵', desc: 'Memory sequence', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.2 },
-    { key: 'whackamole', name: 'Whack-a-Mole', emoji: '🔨', desc: 'Quick reflexes', category: 'action', difficulty: 'Easy', players: '1', rating: 4.0 },
     { key: 'pinball', name: 'Pinball', emoji: '🎰', desc: 'Bounce the ball', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.3 },
-    { key: 'racing', name: 'Circuit Racing', emoji: '🏎️', desc: 'Speed challenge', category: 'action', difficulty: 'Medium', players: '1', rating: 4.5 },
-    { key: 'dragracing', name: 'Drag Racing', emoji: '🏁', desc: 'Quarter mile sprint', category: 'action', difficulty: 'Easy', players: '1', rating: 4.3 },
-    { key: 'offroad', name: 'Off-Road Racing', emoji: '🚙', desc: 'Mud and terrain', category: 'action', difficulty: 'Hard', players: '1', rating: 4.4 },
     { key: 'platformer', name: 'Platformer', emoji: '🏃', desc: 'Jump and run', category: 'action', difficulty: 'Hard', players: '1', rating: 4.4 },
     { key: 'shooter', name: 'Shooter', emoji: '🎯', desc: 'Target practice', category: 'action', difficulty: 'Medium', players: '1', rating: 4.2 },
+    { key: 'bubblepop', name: 'Bubble Pop', emoji: '🫧', desc: 'Pop the bubbles', category: 'arcade', difficulty: 'Easy', players: '1', rating: 4.0 },
+    { key: 'match3', name: 'Match 3', emoji: '💎', desc: 'Match gems', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.1 },
+    { key: 'towerdefense', name: 'Tower Defense', emoji: '🏰', desc: 'Defend your base', category: 'strategy', difficulty: 'Hard', players: '1', rating: 4.5 },
+    { key: 'puzzle15', name: '15 Puzzle', emoji: '🧩', desc: 'Slide tiles', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.3 },
+    { key: 'reversi', name: 'Reversi', emoji: '⚫⚪', desc: 'Flip tiles', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.2 },
+    { key: 'battleship', name: 'Battleship', emoji: '🚢', desc: 'Sink ships', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.1 },
+    { key: 'wordsearch', name: 'Word Search', emoji: '🔍', desc: 'Find words', category: 'educational', difficulty: 'Easy', players: '1', rating: 4.0 },
+    { key: 'spotdiff', name: 'Spot Difference', emoji: '👁️', desc: 'Find differences', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.1 },
+    { key: 'memorycard', name: 'Memory Cards', emoji: '🃏', desc: 'Match cards', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.2 },
+    { key: 'tictactoe4', name: '4x4 Tic-Tac-Toe', emoji: '❌⭕', desc: 'Bigger board', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.3 },
+    { key: 'snake2', name: 'Snake 2', emoji: '🐍', desc: 'Multiplayer snake', category: 'arcade', difficulty: 'Hard', players: '1-2', rating: 4.4 },
+    { key: 'tetris2', name: 'Tetris 2', emoji: '🧩', desc: 'Advanced tetris', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.6 },
+    { key: 'breakout2', name: 'Breakout 2', emoji: '🧱', desc: 'Power-ups', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.3 },
+    { key: 'flappy2', name: 'Flappy 2', emoji: '🐦', desc: 'Multiplayer', category: 'action', difficulty: 'Hard', players: '1-2', rating: 4.4 },
   ]
 
   const filteredGames = games.filter(game => {
@@ -2423,6 +3086,16 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
               </button>
             ))}
           </div>
+          
+          {/* Login Prompt for Favorites */}
+          {!session?.user?.email && (
+            <div className="mt-3 p-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-lg">
+              <div className="flex items-center space-x-2 text-sm text-yellow-300">
+                <Star className="w-4 h-4" />
+                <span>💡 <strong>Login</strong> to save games to favorites and access them later!</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Scrollable Games Grid */}
@@ -2500,9 +3173,27 @@ const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, o
           {/* Empty State */}
           {filteredGames.length === 0 && (
             <div className="text-center py-8">
-              <div className="text-4xl mb-2">🎮</div>
-              <h3 className="text-lg font-bold text-white mb-2">No Games Found</h3>
-              <p className="text-gray-400 text-sm">Try adjusting your search or category filter.</p>
+              {selectedCategory === 'favorites' ? (
+                <>
+                  <div className="text-4xl mb-2">⭐</div>
+                  <h3 className="text-lg font-bold text-white mb-2">No Favorite Games Yet</h3>
+                  <p className="text-gray-400 text-sm mb-4">Start playing games and add them to your favorites!</p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedCategory('all')}
+                    className="px-4 py-2 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-lg text-white text-sm font-semibold"
+                  >
+                    Browse All Games
+                  </motion.button>
+                </>
+              ) : (
+                <>
+                  <div className="text-4xl mb-2">🎮</div>
+                  <h3 className="text-lg font-bold text-white mb-2">No Games Found</h3>
+                  <p className="text-gray-400 text-sm">Try adjusting your search or category filter.</p>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -2857,7 +3548,7 @@ function ChatPageContent() {
     title: string
   } | null>(null)
   const [showGameLauncher, setShowGameLauncher] = useState(false)
-  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps' | 'snake' | 'tetris' | 'pong' | 'breakout' | 'flappy' | '2048' | 'sudoku' | 'chess' | 'checkers' | 'hangman' | 'wordle' | 'pacman' | 'asteroids' | 'spaceinvaders' | 'bomberman' | 'minesweeper' | 'connect4' | 'solitaire' | 'mahjong' | 'crossword' | 'mathquiz' | 'typing' | 'colorblast' | 'jigsaw' | 'simon' | 'whackamole' | 'pinball' | 'racing' | 'dragracing' | 'offroad' | 'platformer' | 'shooter'>(null)
+  const [activeGame, setActiveGame] = useState<null | 'tictactoe' | 'number' | 'memory' | 'rps' | 'snake' | 'tetris' | 'pong' | 'breakout' | 'flappy' | '2048' | 'hangman' | 'mathquiz' | 'whackamole' | 'racing' | 'dragracing' | 'offroad' | 'sudoku' | 'chess' | 'checkers' | 'wordle' | 'pacman' | 'asteroids' | 'spaceinvaders' | 'bomberman' | 'minesweeper' | 'connect4' | 'solitaire' | 'mahjong' | 'crossword' | 'typing' | 'colorblast' | 'jigsaw' | 'simon' | 'pinball' | 'platformer' | 'shooter' | 'bubblepop' | 'match3' | 'towerdefense' | 'puzzle15' | 'reversi' | 'battleship' | 'wordsearch' | 'spotdiff' | 'memorycard' | 'tictactoe4' | 'snake2' | 'tetris2' | 'breakout2' | 'flappy2'>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -3582,10 +4273,15 @@ function ChatPageContent() {
                     breakout: 'Breakout',
                     flappy: 'Flappy Bird',
                     '2048': '2048',
+                    hangman: 'Hangman',
+                    mathquiz: 'Math Quiz',
+                    whackamole: 'Whack-a-Mole',
+                    racing: 'Circuit Racing',
+                    dragracing: 'Drag Racing',
+                    offroad: 'Off-Road Racing',
                     sudoku: 'Sudoku',
                     chess: 'Chess',
                     checkers: 'Checkers',
-                    hangman: 'Hangman',
                     wordle: 'Wordle',
                     pacman: 'Pac-Man',
                     asteroids: 'Asteroids',
@@ -3596,18 +4292,27 @@ function ChatPageContent() {
                     solitaire: 'Solitaire',
                     mahjong: 'Mahjong',
                     crossword: 'Crossword',
-                    mathquiz: 'Math Quiz',
                     typing: 'Speed Typing',
                     colorblast: 'Color Blast',
                     jigsaw: 'Jigsaw Puzzle',
                     simon: 'Simon Says',
-                    whackamole: 'Whack-a-Mole',
                     pinball: 'Pinball',
-                    racing: 'Circuit Racing',
-                    dragracing: 'Drag Racing',
-                    offroad: 'Off-Road Racing',
                     platformer: 'Platformer',
-                    shooter: 'Space Shooter'
+                    shooter: 'Space Shooter',
+                    bubblepop: 'Bubble Pop',
+                    match3: 'Match 3',
+                    towerdefense: 'Tower Defense',
+                    puzzle15: '15 Puzzle',
+                    reversi: 'Reversi',
+                    battleship: 'Battleship',
+                    wordsearch: 'Word Search',
+                    spotdiff: 'Spot Difference',
+                    memorycard: 'Memory Cards',
+                    tictactoe4: '4x4 Tic-Tac-Toe',
+                    snake2: 'Snake 2',
+                    tetris2: 'Tetris 2',
+                    breakout2: 'Breakout 2',
+                    flappy2: 'Flappy 2'
                   }[activeGame] || 'Game' : 'Game'} 
                   onClose={() => setActiveGame(null)}
                   showBackButton={true}
@@ -3680,6 +4385,142 @@ function ChatPageContent() {
                     setActiveGame(null);
                     setShowGameLauncher(true);
                   }} />}
+                  {activeGame === 'sudoku' && <SudokuGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'chess' && <ChessGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'checkers' && <CheckersGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'wordle' && <WordleGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'pacman' && <PacmanGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'asteroids' && <AsteroidsGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'spaceinvaders' && <SpaceInvadersGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'bomberman' && <BombermanGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'minesweeper' && <MinesweeperGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'connect4' && <Connect4Game onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'solitaire' && <SolitaireGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'mahjong' && <MahjongGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'crossword' && <CrosswordGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'typing' && <TypingGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'colorblast' && <ColorBlastGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'jigsaw' && <JigsawGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'simon' && <SimonGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'pinball' && <PinballGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'platformer' && <PlatformerGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'shooter' && <ShooterGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'bubblepop' && <BubblePopGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'match3' && <Match3Game onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'towerdefense' && <TowerDefenseGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'puzzle15' && <Puzzle15Game onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'reversi' && <ReversiGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'battleship' && <BattleshipGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'wordsearch' && <WordSearchGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'spotdiff' && <SpotDiffGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'memorycard' && <MemoryCardGame onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'tictactoe4' && <TicTacToe4Game onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'snake2' && <Snake2Game onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'tetris2' && <Tetris2Game onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'breakout2' && <Breakout2Game onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
+                  {activeGame === 'flappy2' && <Flappy2Game onClose={() => {
+                    setActiveGame(null);
+                    setShowGameLauncher(true);
+                  }} />}
                 </GameModal>
               </>
             )}
@@ -3736,7 +4577,7 @@ function ChatPageContent() {
             
             {/* Tooltip */}
             <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              Play 19 Games!
+              Play 50 Games!
               <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </motion.button>
@@ -3768,6 +4609,500 @@ function ChatPageContent() {
     </div>
   )
 }
+
+// Placeholder game components for remaining games
+const ChessGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">♟️ Chess</h2>
+      <div className="text-lg text-gray-300 mb-6">Chess game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const CheckersGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🔴⚫ Checkers</h2>
+      <div className="text-lg text-gray-300 mb-6">Checkers game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const PacmanGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">👻 Pac-Man</h2>
+      <div className="text-lg text-gray-300 mb-6">Pac-Man game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const AsteroidsGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">☄️ Asteroids</h2>
+      <div className="text-lg text-gray-300 mb-6">Asteroids game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const SpaceInvadersGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">👾 Space Invaders</h2>
+      <div className="text-lg text-gray-300 mb-6">Space Invaders game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const BombermanGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">💣 Bomberman</h2>
+      <div className="text-lg text-gray-300 mb-6">Bomberman game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const MinesweeperGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">💥 Minesweeper</h2>
+      <div className="text-lg text-gray-300 mb-6">Minesweeper game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const Connect4Game = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🔵🔴 Connect 4</h2>
+      <div className="text-lg text-gray-300 mb-6">Connect 4 game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const SolitaireGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🃏 Solitaire</h2>
+      <div className="text-lg text-gray-300 mb-6">Solitaire game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const MahjongGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🀄 Mahjong</h2>
+      <div className="text-lg text-gray-300 mb-6">Mahjong game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const CrosswordGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">📋 Crossword</h2>
+      <div className="text-lg text-gray-300 mb-6">Crossword game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const TypingGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">⌨️ Speed Typing</h2>
+      <div className="text-lg text-gray-300 mb-6">Speed Typing game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const ColorBlastGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🎨 Color Blast</h2>
+      <div className="text-lg text-gray-300 mb-6">Color Blast game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const JigsawGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🧩 Jigsaw Puzzle</h2>
+      <div className="text-lg text-gray-300 mb-6">Jigsaw Puzzle game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const SimonGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🎵 Simon Says</h2>
+      <div className="text-lg text-gray-300 mb-6">Simon Says game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const PinballGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🎰 Pinball</h2>
+      <div className="text-lg text-gray-300 mb-6">Pinball game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const PlatformerGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🏃 Platformer</h2>
+      <div className="text-lg text-gray-300 mb-6">Platformer game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const ShooterGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🎯 Space Shooter</h2>
+      <div className="text-lg text-gray-300 mb-6">Space Shooter game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const TowerDefenseGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🏰 Tower Defense</h2>
+      <div className="text-lg text-gray-300 mb-6">Tower Defense game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const ReversiGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">⚫⚪ Reversi</h2>
+      <div className="text-lg text-gray-300 mb-6">Reversi game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const BattleshipGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🚢 Battleship</h2>
+      <div className="text-lg text-gray-300 mb-6">Battleship game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const WordSearchGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🔍 Word Search</h2>
+      <div className="text-lg text-gray-300 mb-6">Word Search game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const SpotDiffGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">👁️ Spot Difference</h2>
+      <div className="text-lg text-gray-300 mb-6">Spot Difference game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const MemoryCardGame = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🃏 Memory Cards</h2>
+      <div className="text-lg text-gray-300 mb-6">Memory Cards game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const TicTacToe4Game = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">❌⭕ 4x4 Tic-Tac-Toe</h2>
+      <div className="text-lg text-gray-300 mb-6">4x4 Tic-Tac-Toe game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const Snake2Game = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🐍 Snake 2</h2>
+      <div className="text-lg text-gray-300 mb-6">Snake 2 game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const Tetris2Game = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🧩 Tetris 2</h2>
+      <div className="text-lg text-gray-300 mb-6">Tetris 2 game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const Breakout2Game = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🧱 Breakout 2</h2>
+      <div className="text-lg text-gray-300 mb-6">Breakout 2 game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
+
+const Flappy2Game = ({ onClose }: { onClose: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-white mb-4">🐦 Flappy 2</h2>
+      <div className="text-lg text-gray-300 mb-6">Flappy 2 game coming soon!</div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="px-6 py-3 bg-gray-600 rounded-xl text-white font-semibold"
+      >
+        Back to Library
+      </motion.button>
+    </div>
+  </div>
+)
 
 export default function ChatPage() {
   return (
