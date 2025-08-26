@@ -2570,7 +2570,10 @@ function ChatPageContent() {
                   className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
                 />
                 <GameLibrary
-                  onSelect={(key) => { setActiveGame(key as any); setShowGameLauncher(false) }}
+                  onSelect={(key) => { 
+                    setActiveGame(key as any); 
+                    setShowGameLauncher(false);
+                  }}
                   onClose={() => setShowGameLauncher(false)}
                 />
               </>
@@ -2627,18 +2630,18 @@ function ChatPageContent() {
                   }[activeGame] || 'Game' : 'Game'} 
                   onClose={() => setActiveGame(null)}
                   showBackButton={true}
-                  onBack={() => setActiveGame(null)}
+                  onBack={() => setShowGameLauncher(true)}
                 >
-                  {activeGame === 'tictactoe' && <TicTacToeGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'number' && <NumberGuessGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'memory' && <MemoryGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'rps' && <RockPaperScissorsGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'snake' && <SnakeGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'tetris' && <TetrisGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'pong' && <PongGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'breakout' && <BreakoutGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === 'flappy' && <FlappyBirdGame onClose={() => setActiveGame(null)} />}
-                  {activeGame === '2048' && <Game2048 onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'tictactoe' && <TicTacToeGame onClose={() => setShowGameLauncher(true)} />}
+                  {activeGame === 'number' && <NumberGuessGame onClose={() => setShowGameLauncher(true)} />}
+                  {activeGame === 'memory' && <MemoryGame onClose={() => setShowGameLauncher(true)} />}
+                  {activeGame === 'rps' && <RockPaperScissorsGame onClose={() => setShowGameLauncher(true)} />}
+                  {activeGame === 'snake' && <SnakeGame onClose={() => setShowGameLauncher(true)} />}
+                  {activeGame === 'tetris' && <TetrisGame onClose={() => setShowGameLauncher(true)} />}
+                  {activeGame === 'pong' && <PongGame onClose={() => setShowGameLauncher(true)} />}
+                  {activeGame === 'breakout' && <BreakoutGame onClose={() => setShowGameLauncher(true)} />}
+                  {activeGame === 'flappy' && <FlappyBirdGame onClose={() => setShowGameLauncher(true)} />}
+                  {activeGame === '2048' && <Game2048 onClose={() => setShowGameLauncher(true)} />}
                 </GameModal>
               </>
             )}
