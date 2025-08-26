@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Code, Mail, Twitter, Linkedin, Github, User, LogIn, UserPlus, MessageSquare } from 'lucide-react'
+import { Code, Mail, Twitter, Linkedin, Github, User, LogIn, UserPlus, MessageSquare, Star, Award, Zap } from 'lucide-react'
 import Link from 'next/link'
 
 const footerLinks = {
@@ -54,9 +54,142 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-white border-t border-gray-800">
+    <footer className="bg-black text-white">
+      {/* Founder Section - Now at the top */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="py-20 bg-gradient-to-b from-gray-900/50 to-black border-b border-gray-800/50"
+      >
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-12">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-cyan-400/20 to-pink-400/20 border border-cyan-400/30 mb-6"
+            >
+              <Award className="w-5 h-5 text-cyan-400 mr-2" />
+              <span className="text-cyan-400 font-medium">Meet Our Founder</span>
+            </motion.div>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              The Visionary Behind <span className="gradient-text-neon">Beloop AI</span>
+            </h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              A passionate entrepreneur dedicated to revolutionizing the future of AI-powered development
+            </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-3xl p-8 md:p-12 border border-gray-700/50 backdrop-blur-sm shadow-2xl">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                {/* Profile Image */}
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  className="flex justify-center lg:justify-start"
+                >
+                  <div className="relative">
+                    <div className="relative">
+                      <img 
+                        src="/founder-profile.jpg" 
+                        alt="Mohammed Nabeel - Founder of Beloop AI"
+                        className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-gradient-to-r from-cyan-400 to-pink-500 shadow-2xl"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                      <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full flex items-center justify-center text-white text-4xl md:text-5xl font-bold hidden shadow-2xl">
+                        MN
+                      </div>
+                      {/* Status indicator */}
+                      <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-gray-900 flex items-center justify-center">
+                        <div className="w-3 h-3 bg-white rounded-full"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Floating badges */}
+                    <motion.div
+                      animate={{ y: [-5, 5, -5] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                      className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg"
+                    >
+                      <Star className="w-6 h-6 text-white" />
+                    </motion.div>
+                    
+                    <motion.div
+                      animate={{ y: [5, -5, 5] }}
+                      transition={{ duration: 2.5, repeat: Infinity }}
+                      className="absolute -bottom-4 -left-4 w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg"
+                    >
+                      <Zap className="w-5 h-5 text-white" />
+                    </motion.div>
+                  </div>
+                </motion.div>
+                
+                {/* Profile Info */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                  className="lg:col-span-2 text-center lg:text-left"
+                >
+                  <h3 className="text-3xl font-bold text-white mb-3">Mohammed Nabeel</h3>
+                  <p className="text-cyan-400 font-semibold text-lg mb-4">Visionary Entrepreneur & AI Innovator</p>
+                  <p className="text-gray-300 text-base mb-6 leading-relaxed">
+                    A passionate visionary entrepreneur with developing skills in technology and AI innovation. 
+                    Dedicated to creating cutting-edge solutions that bridge the gap between imagination and reality.
+                    Leading the future of AI-powered applications and digital experiences.
+                  </p>
+                  
+                  {/* Skills/Tags */}
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-8">
+                    <span className="px-4 py-2 bg-cyan-500/20 text-cyan-400 text-sm rounded-full border border-cyan-500/30">AI Innovation</span>
+                    <span className="px-4 py-2 bg-pink-500/20 text-pink-400 text-sm rounded-full border border-pink-500/30">Entrepreneurship</span>
+                    <span className="px-4 py-2 bg-purple-500/20 text-purple-400 text-sm rounded-full border border-purple-500/30">Technology</span>
+                    <span className="px-4 py-2 bg-green-500/20 text-green-400 text-sm rounded-full border border-green-500/30">Leadership</span>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
+                    <motion.a
+                      href="https://www.linkedin.com/in/mohammed-nabeel-ca-007a8122b"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="group flex items-center space-x-3 bg-gradient-to-r from-cyan-400 to-pink-500 hover:from-cyan-500 hover:to-pink-600 text-white px-8 py-4 rounded-xl transition-all duration-300 cursor-pointer shadow-lg hover:shadow-cyan-400/25 font-medium"
+                    >
+                      <Linkedin className="w-5 h-5 group-hover:animate-bounce" />
+                      <span>Connect on LinkedIn</span>
+                      <div className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        ↗
+                      </div>
+                    </motion.a>
+                    
+                    <motion.a
+                      href="mailto:beloopstore@gmail.com"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="group flex items-center space-x-3 bg-gray-800 hover:bg-gray-700 text-white px-8 py-4 rounded-xl transition-all duration-300 cursor-pointer border border-gray-700 hover:border-gray-600 font-medium"
+                    >
+                      <Mail className="w-5 h-5" />
+                      <span>Send Email</span>
+                    </motion.a>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Main Footer Content */}
       <div className="container mx-auto px-6 py-16">
-        {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
           {/* Company Info */}
           <div className="lg:col-span-2">
@@ -182,100 +315,11 @@ export default function Footer() {
           </motion.div>
         </div>
 
-        {/* About Founder Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mb-12 pt-8 border-t border-gray-800"
-        >
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-white mb-2">About Founder</h3>
-            <p className="text-gray-400 mb-6">Meet the visionary behind Beloop AI</p>
-            <div className="max-w-3xl mx-auto">
-              <div className="bg-gradient-to-br from-gray-900/80 to-gray-800/80 rounded-2xl p-8 border border-gray-700/50 backdrop-blur-sm shadow-2xl">
-                <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
-                  {/* Profile Image */}
-                  <div className="flex-shrink-0">
-                    <div className="relative">
-                      <img 
-                        src="/founder-profile.jpg" 
-                        alt="Mohammed Nabeel - Founder of Beloop AI"
-                        className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-gradient-to-r from-cyan-400 to-pink-500 shadow-2xl"
-                        onError={(e) => {
-                          // Fallback to initials if image fails to load
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          target.nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                      <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full flex items-center justify-center text-white text-3xl md:text-4xl font-bold hidden shadow-2xl">
-                        MN
-                      </div>
-                      {/* Status indicator */}
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-gray-900 flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Profile Info */}
-                  <div className="flex-1 text-center md:text-left">
-                    <h4 className="text-2xl font-bold text-white mb-2">Mohammed Nabeel</h4>
-                    <p className="text-cyan-400 font-semibold mb-3">Visionary Entrepreneur & AI Innovator</p>
-                    <p className="text-gray-300 text-sm mb-6 leading-relaxed">
-                      A passionate visionary entrepreneur with developing skills in technology and AI innovation. 
-                      Dedicated to creating cutting-edge solutions that bridge the gap between imagination and reality.
-                      Leading the future of AI-powered applications and digital experiences.
-                    </p>
-                    
-                    {/* Skills/Tags */}
-                    <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-6">
-                      <span className="px-3 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full border border-cyan-500/30">AI Innovation</span>
-                      <span className="px-3 py-1 bg-pink-500/20 text-pink-400 text-xs rounded-full border border-pink-500/30">Entrepreneurship</span>
-                      <span className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full border border-purple-500/30">Technology</span>
-                      <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30">Leadership</span>
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex items-center justify-center space-x-4">t  
-                  <motion.a
-                    href="https://www.linkedin.com/in/mohammed-nabeel-ca-007a8122b"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="group flex items-center space-x-2 bg-gradient-to-r from-cyan-400 to-pink-500 hover:from-cyan-500 hover:to-pink-600 text-white px-6 py-3 rounded-lg transition-all duration-300 cursor-pointer shadow-lg hover:shadow-cyan-400/25"
-                  >
-                    <Linkedin className="w-4 h-4 group-hover:animate-bounce" />
-                    <span className="text-sm font-medium">Connect on LinkedIn</span>
-                    <div className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      ↗
-                    </div>
-                  </motion.a>
-                  
-                  <motion.a
-                    href="mailto:beloopstore@gmail.com"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="group flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-all duration-300 cursor-pointer border border-gray-700 hover:border-gray-600"
-                  >
-                    <Mail className="w-4 h-4" />
-                    <span className="text-sm font-medium">Email</span>
-                  </motion.a>
-                </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
         {/* Contact Info */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
           className="flex items-center justify-center mb-12 pt-8 border-t border-gray-800"
         >
           <div className="flex items-center space-x-3">
@@ -290,7 +334,7 @@ export default function Footer() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
           className="pt-8 border-t border-gray-800"
         >
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
