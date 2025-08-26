@@ -1583,7 +1583,8 @@ function ChatPageContent() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
+              </motion.div>
             )}
 
             <div ref={messagesEndRef} />
