@@ -23,7 +23,10 @@ import {
   Eye,
   Code,
   Monitor,
-  X
+  X,
+  Play,
+  ArrowLeft,
+  Trophy
 } from 'lucide-react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
@@ -397,55 +400,295 @@ const RockPaperScissorsGame = ({ onClose }: { onClose: () => void }) => {
 
 // Game Library selector
 const GameLibrary = ({ onSelect, onClose }: { onSelect: (key: string) => void, onClose: () => void }) => {
-  const games = [
-    { key: 'tictactoe', name: 'Tic‑Tac‑Toe', emoji: '❌⭕', desc: 'Play vs computer' },
-    { key: 'number', name: 'Number Guess', emoji: '🎲', desc: 'Guess 1-100' },
-    { key: 'memory', name: 'Memory', emoji: '🧠', desc: 'Match pairs' },
-    { key: 'rps', name: 'Rock Paper Scissors', emoji: '✊✋✌️', desc: 'Best of luck' },
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [hoveredGame, setHoveredGame] = useState<string | null>(null)
+
+  const categories = [
+    { key: 'all', name: '🎮 All Games', count: 30 },
+    { key: 'arcade', name: '🕹️ Arcade', count: 8 },
+    { key: 'puzzle', name: '🧩 Puzzle', count: 6 },
+    { key: 'strategy', name: '♟️ Strategy', count: 4 },
+    { key: 'action', name: '⚡ Action', count: 5 },
+    { key: 'educational', name: '📚 Educational', count: 4 },
+    { key: 'classic', name: '🏆 Classic', count: 3 }
   ]
+
+  const games = [
+    { key: 'tictactoe', name: 'Tic‑Tac‑Toe', emoji: '❌⭕', desc: 'Play vs computer', category: 'classic', difficulty: 'Easy', players: '1-2', rating: 4.5 },
+    { key: 'number', name: 'Number Guess', emoji: '🎲', desc: 'Guess 1-100', category: 'puzzle', difficulty: 'Easy', players: '1', rating: 4.2 },
+    { key: 'memory', name: 'Memory', emoji: '🧠', desc: 'Match pairs', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.3 },
+    { key: 'rps', name: 'Rock Paper Scissors', emoji: '✊✋✌️', desc: 'Best of luck', category: 'classic', difficulty: 'Easy', players: '1-2', rating: 4.0 },
+    { key: 'snake', name: 'Snake', emoji: '🐍', desc: 'Classic arcade', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.7 },
+    { key: 'tetris', name: 'Tetris', emoji: '🧩', desc: 'Block puzzle', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.8 },
+    { key: 'pong', name: 'Pong', emoji: '🏓', desc: 'Table tennis', category: 'arcade', difficulty: 'Medium', players: '1-2', rating: 4.4 },
+    { key: 'flappy', name: 'Flappy Bird', emoji: '🐦', desc: 'Avoid pipes', category: 'arcade', difficulty: 'Hard', players: '1', rating: 4.6 },
+    { key: 'hangman', name: 'Hangman', emoji: '🪢', desc: 'Word guessing', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.1 },
+    { key: 'sudoku', name: 'Sudoku', emoji: '🔢', desc: 'Number puzzle', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.5 },
+    { key: 'wordsearch', name: 'Word Search', emoji: '🔍', desc: 'Find words', category: 'educational', difficulty: 'Easy', players: '1', rating: 4.0 },
+    { key: 'breakout', name: 'Breakout', emoji: '🧱', desc: 'Break blocks', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.3 },
+    { key: 'pacman', name: 'Pac-Man', emoji: '👻', desc: 'Eat dots', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.7 },
+    { key: 'chess', name: 'Chess', emoji: '♟️', desc: 'Strategic battle', category: 'strategy', difficulty: 'Hard', players: '1-2', rating: 4.9 },
+    { key: 'checkers', name: 'Checkers', emoji: '🔴', desc: 'Jump pieces', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.2 },
+    { key: 'connect4', name: 'Connect 4', emoji: '🔵', desc: 'Line up 4', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.4 },
+    { key: 'battleship', name: 'Battleship', emoji: '🚢', desc: 'Sink ships', category: 'strategy', difficulty: 'Medium', players: '1-2', rating: 4.1 },
+    { key: 'minesweeper', name: 'Minesweeper', emoji: '💣', desc: 'Avoid bombs', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.6 },
+    { key: '2048', name: '2048', emoji: '🎯', desc: 'Merge tiles', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.8 },
+    { key: 'colorpicker', name: 'Color Picker', emoji: '🎨', desc: 'Match colors', category: 'action', difficulty: 'Easy', players: '1', rating: 3.9 },
+    { key: 'typing', name: 'Speed Typing', emoji: '⌨️', desc: 'Type fast', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.2 },
+    { key: 'reaction', name: 'Reaction Time', emoji: '⚡', desc: 'Click fast', category: 'action', difficulty: 'Easy', players: '1', rating: 4.0 },
+    { key: 'simon', name: 'Simon Says', emoji: '🎵', desc: 'Follow pattern', category: 'action', difficulty: 'Medium', players: '1', rating: 4.3 },
+    { key: 'whackamole', name: 'Whack-a-Mole', emoji: '🔨', desc: 'Hit moles', category: 'action', difficulty: 'Easy', players: '1', rating: 4.1 },
+    { key: 'carracing', name: 'Car Racing', emoji: '🏎️', desc: 'Avoid obstacles', category: 'action', difficulty: 'Medium', players: '1', rating: 4.4 },
+    { key: 'platformer', name: 'Platformer', emoji: '🏃', desc: 'Jump & run', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.5 },
+    { key: 'shooter', name: 'Space Shooter', emoji: '🚀', desc: 'Shoot aliens', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.3 },
+    { key: 'puzzle', name: 'Sliding Puzzle', emoji: '🧩', desc: 'Arrange tiles', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.4 },
+    { key: 'quiz', name: 'Trivia Quiz', emoji: '❓', desc: 'Test knowledge', category: 'educational', difficulty: 'Medium', players: '1', rating: 4.2 },
+    { key: 'math', name: 'Math Challenge', emoji: '🧮', desc: 'Solve equations', category: 'educational', difficulty: 'Hard', players: '1', rating: 4.1 },
+    { key: 'wordle', name: 'Wordle', emoji: '📝', desc: 'Guess word', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.7 },
+    { key: 'crossword', name: 'Crossword', emoji: '📊', desc: 'Fill words', category: 'puzzle', difficulty: 'Hard', players: '1', rating: 4.3 },
+    { key: 'jigsaw', name: 'Jigsaw Puzzle', emoji: '🧩', desc: 'Piece together', category: 'puzzle', difficulty: 'Medium', players: '1', rating: 4.0 },
+    { key: 'maze', name: 'Maze Runner', emoji: '🏃', desc: 'Find exit', category: 'action', difficulty: 'Medium', players: '1', rating: 4.2 },
+    { key: 'tower', name: 'Tower Defense', emoji: '🏰', desc: 'Defend base', category: 'strategy', difficulty: 'Hard', players: '1', rating: 4.6 },
+    { key: 'rpg', name: 'Mini RPG', emoji: '⚔️', desc: 'Adventure game', category: 'arcade', difficulty: 'Medium', players: '1', rating: 4.4 },
+    { key: 'arcade', name: 'Arcade Collection', emoji: '🕹️', desc: 'Multiple games', category: 'arcade', difficulty: 'Mixed', players: '1', rating: 4.5 },
+  ]
+
+  const filteredGames = games.filter(game => {
+    const matchesCategory = selectedCategory === 'all' || game.category === selectedCategory
+    const matchesSearch = game.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         game.desc.toLowerCase().includes(searchTerm.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Easy': return 'text-green-400'
+      case 'Medium': return 'text-yellow-400'
+      case 'Hard': return 'text-red-400'
+      default: return 'text-gray-400'
+    }
+  }
+
   return (
-    <GameModal title="Game Library" onClose={onClose}>
-      <div className="p-6 max-w-5xl mx-auto">
-        <p className="text-gray-300 mb-4">Choose a game to play while the AI is busy.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {games.map(g => (
-            <button key={g.key} onClick={() => onSelect(g.key)}
-              className="group rounded-2xl border border-gray-700 bg-gray-900/60 hover:bg-gray-800/60 transition-all p-5 text-left">
-              <div className="text-3xl mb-2">{g.emoji}</div>
-              <div className="text-white font-semibold">{g.name}</div>
-              <div className="text-gray-400 text-sm">{g.desc}</div>
-            </button>
-          ))}
+    <GameModal title="🎮 Game Arcade" onClose={onClose}>
+      <div className="p-6 max-w-7xl mx-auto h-full flex flex-col">
+        {/* Header with Search and Stats */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Choose Your Adventure</h2>
+              <p className="text-gray-300">30+ games to play while the AI is busy</p>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-bold text-cyan-400">{filteredGames.length}</div>
+              <div className="text-sm text-gray-400">Games Available</div>
+            </div>
+          </div>
+          
+          {/* Search Bar */}
+          <div className="relative mb-4">
+            <input
+              type="text"
+              placeholder="Search games..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-4 pl-12 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
+            />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          </div>
+
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {categories.map(cat => (
+              <button
+                key={cat.key}
+                onClick={() => setSelectedCategory(cat.key)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  selectedCategory === cat.key
+                    ? 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white shadow-lg'
+                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                }`}
+              >
+                {cat.name} ({cat.count})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Games Grid */}
+        <div className="flex-1 overflow-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredGames.map(game => (
+              <motion.button
+                key={game.key}
+                onClick={() => onSelect(game.key)}
+                onMouseEnter={() => setHoveredGame(game.key)}
+                onMouseLeave={() => setHoveredGame(null)}
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.95 }}
+                className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden ${
+                  hoveredGame === game.key
+                    ? 'border-cyan-400/50 bg-gradient-to-br from-gray-800/80 to-gray-900/80 shadow-2xl shadow-cyan-400/25'
+                    : 'border-gray-700/50 bg-gradient-to-br from-gray-900/60 to-gray-800/60 hover:border-cyan-400/30'
+                }`}
+              >
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-pink-500/20"></div>
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-cyan-400/10 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+                  <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-pink-400/10 to-transparent rounded-full translate-y-8 -translate-x-8"></div>
+                </div>
+
+                {/* Game Content */}
+                <div className="relative p-6 text-left">
+                  {/* Game Icon */}
+                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
+                    {game.emoji}
+                  </div>
+                  
+                  {/* Game Info */}
+                  <div className="mb-3">
+                    <h3 className="text-white font-bold text-lg mb-1">{game.name}</h3>
+                    <p className="text-gray-400 text-sm">{game.desc}</p>
+                  </div>
+
+                  {/* Game Stats */}
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded-full ${getDifficultyColor(game.difficulty)} bg-gray-800/50`}>
+                        {game.difficulty}
+                      </span>
+                      <span className="text-gray-400 bg-gray-800/50 px-2 py-1 rounded-full">
+                        {game.players}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                      <span className="text-gray-300">{game.rating}</span>
+                    </div>
+                  </div>
+
+                  {/* Hover Effect */}
+                  <div className={`absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl`}></div>
+                  
+                  {/* Play Button */}
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full flex items-center justify-center">
+                      <Play className="w-4 h-4 text-white fill-current" />
+                    </div>
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {filteredGames.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🎮</div>
+              <h3 className="text-xl font-semibold text-white mb-2">No games found</h3>
+              <p className="text-gray-400">Try adjusting your search or category filter</p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 pt-4 border-t border-gray-700/50">
+          <div className="flex items-center justify-between text-sm text-gray-400">
+            <div className="flex items-center space-x-4">
+              <span>🎯 {filteredGames.length} games available</span>
+              <span>⭐ Average rating: 4.3</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span>All games are free to play</span>
+            </div>
+          </div>
         </div>
       </div>
     </GameModal>
   )
 }
 
-// Simple Game Modal wrapper
-const GameModal = ({ title, onClose, children }: { title: string, onClose: () => void, children: React.ReactNode }) => {
+// Enhanced Game Modal wrapper with better game area feel
+const GameModal = ({ title, onClose, children, showBackButton = false, onBack }: { 
+  title: string, 
+  onClose: () => void, 
+  children: React.ReactNode,
+  showBackButton?: boolean,
+  onBack?: () => void
+}) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      className="fixed inset-0 md:inset-6 z-50 bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-none md:rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+      className="fixed inset-0 md:inset-6 z-50 bg-gradient-to-br from-gray-900/98 via-gray-800/95 to-gray-900/98 backdrop-blur-xl border border-gray-700/50 rounded-none md:rounded-2xl shadow-2xl overflow-hidden flex flex-col"
     >
-      <div className="flex items-center justify-between p-4 bg-gray-800/50 border-b border-gray-700/50 flex-shrink-0">
-        <div className="flex items-center space-x-3">
-          <Monitor className="w-5 h-5 text-cyan-400" />
-          <span className="text-lg font-semibold text-white">{title}</span>
-        </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onClose}
-          className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-900/20 transition-all duration-200"
-          title="Close"
-        >
-          <X className="w-4 h-4" />
-        </motion.button>
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-pink-500/5"></div>
+        <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-cyan-400/10 to-transparent rounded-full -translate-x-16 -translate-y-16"></div>
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-tl from-pink-400/10 to-transparent rounded-full translate-x-20 translate-y-20"></div>
+        <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-gradient-to-br from-purple-400/5 to-transparent rounded-full -translate-x-12 -translate-y-12"></div>
       </div>
-      <div className="flex-1 min-h-0 overflow-auto">
+
+      {/* Header */}
+      <div className="relative flex items-center justify-between p-6 bg-gradient-to-r from-gray-800/80 to-gray-700/80 border-b border-gray-600/50 flex-shrink-0 backdrop-blur-sm">
+        <div className="flex items-center space-x-4">
+          {showBackButton && onBack && (
+            <motion.button
+              whileHover={{ scale: 1.05, x: -2 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onBack}
+              className="p-2 rounded-lg text-gray-300 hover:text-cyan-400 hover:bg-cyan-900/20 transition-all duration-200"
+              title="Back to Game Library"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </motion.button>
+          )}
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-lg flex items-center justify-center">
+              <Monitor className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="text-xl font-bold text-white">{title}</span>
+              {showBackButton && (
+                <div className="text-xs text-gray-400 mt-1">Game in Progress</div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          {/* Game Stats (if in game) */}
+          {showBackButton && (
+            <div className="flex items-center space-x-3 mr-4">
+              <div className="flex items-center space-x-1 text-sm text-gray-300">
+                <Clock className="w-4 h-4" />
+                <span>00:00</span>
+              </div>
+              <div className="flex items-center space-x-1 text-sm text-gray-300">
+                <Trophy className="w-4 h-4" />
+                <span>0</span>
+              </div>
+            </div>
+          )}
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onClose}
+            className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-900/20 transition-all duration-200"
+            title="Close"
+          >
+            <X className="w-5 h-5" />
+          </motion.button>
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="relative flex-1 min-h-0 overflow-auto">
         {children}
       </div>
     </motion.div>
@@ -1325,8 +1568,7 @@ function ChatPageContent() {
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
             )}
 
             <div ref={messagesEndRef} />
@@ -1385,11 +1627,87 @@ function ChatPageContent() {
                   onClick={() => setActiveGame(null)}
                   className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
                 />
-                <GameModal title={{ tictactoe: 'Tic‑Tac‑Toe', number: 'Number Guessing', memory: 'Memory Game', rps: 'Rock • Paper • Scissors' }[activeGame]} onClose={() => setActiveGame(null)}>
+                <GameModal 
+                  title={{
+                    tictactoe: 'Tic‑Tac‑Toe', 
+                    number: 'Number Guessing', 
+                    memory: 'Memory Game', 
+                    rps: 'Rock • Paper • Scissors',
+                    snake: 'Snake Game',
+                    tetris: 'Tetris',
+                    pong: 'Pong',
+                    flappy: 'Flappy Bird',
+                    hangman: 'Hangman',
+                    sudoku: 'Sudoku',
+                    wordsearch: 'Word Search',
+                    breakout: 'Breakout',
+                    pacman: 'Pac-Man',
+                    chess: 'Chess',
+                    checkers: 'Checkers',
+                    connect4: 'Connect 4',
+                    battleship: 'Battleship',
+                    minesweeper: 'Minesweeper',
+                    '2048': '2048',
+                    colorpicker: 'Color Picker',
+                    typing: 'Speed Typing',
+                    reaction: 'Reaction Time',
+                    simon: 'Simon Says',
+                    whackamole: 'Whack-a-Mole',
+                    carracing: 'Car Racing',
+                    platformer: 'Platformer',
+                    shooter: 'Space Shooter',
+                    puzzle: 'Sliding Puzzle',
+                    quiz: 'Trivia Quiz',
+                    math: 'Math Challenge',
+                    wordle: 'Wordle',
+                    crossword: 'Crossword',
+                    jigsaw: 'Jigsaw Puzzle',
+                    maze: 'Maze Runner',
+                    tower: 'Tower Defense',
+                    rpg: 'Mini RPG',
+                    arcade: 'Arcade Collection'
+                  }[activeGame] || 'Game'} 
+                  onClose={() => setActiveGame(null)}
+                  showBackButton={true}
+                  onBack={() => setActiveGame(null)}
+                >
                   {activeGame === 'tictactoe' && <TicTacToeGame onClose={() => setActiveGame(null)} />}
                   {activeGame === 'number' && <NumberGuessGame onClose={() => setActiveGame(null)} />}
                   {activeGame === 'memory' && <MemoryGame onClose={() => setActiveGame(null)} />}
                   {activeGame === 'rps' && <RockPaperScissorsGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'snake' && <SnakeGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'tetris' && <TetrisGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'pong' && <PongGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'flappy' && <FlappyBirdGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'hangman' && <HangmanGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'sudoku' && <SudokuGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'wordsearch' && <WordSearchGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'breakout' && <BreakoutGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'pacman' && <PacmanGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'chess' && <ChessGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'checkers' && <CheckersGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'connect4' && <Connect4Game onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'battleship' && <BattleshipGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'minesweeper' && <MinesweeperGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === '2048' && <Game2048 onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'colorpicker' && <ColorPickerGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'typing' && <TypingGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'reaction' && <ReactionGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'simon' && <SimonGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'whackamole' && <WhackAMoleGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'carracing' && <CarRacingGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'platformer' && <PlatformerGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'shooter' && <ShooterGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'puzzle' && <SlidingPuzzleGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'quiz' && <QuizGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'math' && <MathGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'wordle' && <WordleGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'crossword' && <CrosswordGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'jigsaw' && <JigsawGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'maze' && <MazeGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'tower' && <TowerDefenseGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'rpg' && <RPGGame onClose={() => setActiveGame(null)} />}
+                  {activeGame === 'arcade' && <ArcadeCollection onClose={() => setActiveGame(null)} />}
                 </GameModal>
               </>
             )}
