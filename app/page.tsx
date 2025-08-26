@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Sparkles, 
@@ -15,52 +14,18 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import Header from './components/Header'
+import InteractiveElements from './components/InteractiveElements'
 import LazyLoad, { LazyFeatures, LazyTestimonials, LazyPricing, LazyFooter } from './components/LazyLoad'
 
 export default function Home() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
-    }
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
-
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Animated Background */}
       <div className="fixed inset-0 bg-grid opacity-20"></div>
       <div className="fixed inset-0 bg-noise"></div>
       
-      {/* Floating Particles */}
-      <div className="particles">
-        {[...Array(15)].map((_, i) => (
-          <div
-            key={i}
-            className="particle"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 8}s`,
-              animationDuration: `${8 + Math.random() * 4}s`
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Mouse Trail Effect */}
-      <div 
-        className="fixed w-4 h-4 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full pointer-events-none z-50 mix-blend-screen"
-        style={{
-          left: mousePosition.x - 8,
-          top: mousePosition.y - 8,
-          transform: 'translate(-50%, -50%)',
-          filter: 'blur(1px)',
-          opacity: 0.6
-        }}
-      />
+      {/* Interactive Elements (Client-only) */}
+      <InteractiveElements />
 
       <Header />
       
