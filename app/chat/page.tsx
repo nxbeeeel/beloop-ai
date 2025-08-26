@@ -315,7 +315,7 @@ ${js}
 
 // Number Guessing Game
 const NumberGuessGame = ({ onClose }: { onClose: () => void }) => {
-  const [target, setTarget] = useState<number>(() => Math.floor(Math.random() * 100) + 1)
+  const [target, setTarget] = useState<number>(50) // Fixed initial value to prevent hydration error
   const [attempts, setAttempts] = useState(0)
   const [input, setInput] = useState('')
   const [message, setMessage] = useState('Guess a number between 1 and 100')
@@ -372,13 +372,19 @@ const MemoryGame = ({ onClose }: { onClose: () => void }) => {
 
   useEffect(() => {
     const arr = [...base, ...base]
-    for (let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()* (i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] }
+    // Shuffle only on client side to prevent hydration error
+    if (typeof window !== 'undefined') {
+      for (let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()* (i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] }
+    }
     setCards(arr)
   }, [])
 
   const reset = () => {
     const arr = [...base, ...base]
-    for (let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()* (i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] }
+    // Shuffle only on client side to prevent hydration error
+    if (typeof window !== 'undefined') {
+      for (let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()* (i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] }
+    }
     setCards(arr)
     setFlipped([])
     setMatched(Array(16).fill(false))
@@ -671,7 +677,7 @@ const SnakeGame = ({ onClose }: { onClose: () => void }) => {
 // Tetris Game
 const TetrisGame = ({ onClose }: { onClose: () => void }) => {
   const [board, setBoard] = useState(createEmptyBoard())
-  const [currentPiece, setCurrentPiece] = useState(generatePiece())
+  const [currentPiece, setCurrentPiece] = useState([[1, 1, 1, 1]]) // Fixed initial value to prevent hydration error
   const [position, setPosition] = useState({ x: 3, y: 0 })
   const [rotation, setRotation] = useState(0)
   const [score, setScore] = useState(0)
@@ -1439,7 +1445,7 @@ const Game2048 = ({ onClose }: { onClose: () => void }) => {
 // Hangman Game
 const HangmanGame = ({ onClose }: { onClose: () => void }) => {
   const words = ['JAVASCRIPT', 'REACT', 'PYTHON', 'TYPESCRIPT', 'NEXTJS', 'TAILWIND', 'FRAMER', 'MOTION', 'GAMING', 'DEVELOPER']
-  const [word, setWord] = useState(words[Math.floor(Math.random() * words.length)])
+  const [word, setWord] = useState(words[0]) // Fixed initial value to prevent hydration error
   const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set())
   const [wrongGuesses, setWrongGuesses] = useState(0)
   const [gameOver, setGameOver] = useState(false)
@@ -2469,7 +2475,7 @@ const SudokuGame = ({ onClose }: { onClose: () => void }) => {
 // Wordle Game
 const WordleGame = ({ onClose }: { onClose: () => void }) => {
   const words = ['REACT', 'GAMES', 'FUNNY', 'SMART', 'QUICK', 'BRAVE', 'HAPPY', 'PEACE', 'DREAM', 'SPACE']
-  const [word, setWord] = useState(words[Math.floor(Math.random() * words.length)])
+  const [word, setWord] = useState(words[0]) // Fixed initial value to prevent hydration error
   const [guesses, setGuesses] = useState<string[]>([])
   const [currentGuess, setCurrentGuess] = useState('')
   const [gameOver, setGameOver] = useState(false)
