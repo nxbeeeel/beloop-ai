@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { LogOut, User, Home, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
@@ -104,10 +105,12 @@ export default function SignOutPage() {
                 >
                   <div className="relative inline-block">
                     {session.user?.image ? (
-                      <img 
-                        src={session.user.image} 
-                        alt={session.user.name || 'User'} 
-                        className="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-cyan-400/30"
+                      <Image 
+                        src={session.user.image}
+                        alt={session.user.name || 'User'}
+                        width={80}
+                        height={80}
+                        className="rounded-full mx-auto mb-4 border-4 border-cyan-400/30"
                       />
                     ) : (
                       <div className="w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-cyan-400/30">

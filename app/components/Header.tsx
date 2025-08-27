@@ -4,7 +4,8 @@ import { useState, useEffect, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Menu, X, Code } from 'lucide-react'
 import Link from 'next/link'
-import AuthSection from './AuthSection'
+import dynamic from 'next/dynamic'
+const AuthSection = dynamic(() => import('./AuthSection'), { ssr: false })
 
 const Header = memo(function Header() {
   const [isScrolled, setIsScrolled] = useState(false)

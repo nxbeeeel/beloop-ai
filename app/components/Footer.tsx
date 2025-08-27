@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Code, Mail, Twitter, Linkedin, Github, User, LogIn, UserPlus, MessageSquare, Star, Award, Zap } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 const footerLinks = {
@@ -94,15 +95,18 @@ export default function Footer() {
                 >
                   <div className="relative">
                     <div className="relative">
-                      <img 
+                      <Image 
                         src="/founder-profile.jpg" 
                         alt="Mohammed Nabeel - Founder of Beloop AI"
-                        className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-gradient-to-r from-cyan-400 to-pink-500 shadow-2xl"
+                        width={160}
+                        height={160}
+                        className="rounded-full object-cover border-4 border-gradient-to-r from-cyan-400 to-pink-500 shadow-2xl"
                         onError={(e) => {
-                          const target = e.target as HTMLImageElement;
+                          const target = e.target as any;
                           target.style.display = 'none';
                           target.nextElementSibling?.classList.remove('hidden');
                         }}
+                        priority={false}
                       />
                       <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full flex items-center justify-center text-white text-4xl md:text-5xl font-bold hidden shadow-2xl">
                         MN

@@ -24,6 +24,7 @@ import {
   Diamond
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function AccountPage() {
   const { data: session } = useSession()
@@ -391,10 +392,12 @@ export default function AccountPage() {
                           <div className="relative inline-block">
                             <div className="w-32 h-32 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 relative">
                               {session?.user?.image ? (
-                                <img 
-                                  src={session.user.image} 
-                                  alt={session.user.name || 'User'} 
-                                  className="w-full h-full rounded-full object-cover"
+                                <Image 
+                                  src={session.user.image}
+                                  alt={session.user.name || 'User'}
+                                  width={128}
+                                  height={128}
+                                  className="rounded-full object-cover"
                                 />
                               ) : (
                                 <User className="w-16 h-16 text-white" />
