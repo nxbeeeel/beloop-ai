@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Menu, X, Code } from 'lucide-react'
 import Link from 'next/link'
 import AuthSection from './AuthSection'
 
-export default function Header() {
+const Header = memo(function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -45,6 +45,10 @@ export default function Header() {
             </Link>
             <Link href="/chat" className="text-gray-300 hover:text-cyan-400 transition-colors duration-300 relative group">
               AI Chat
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-pink-500 transition-all duration-300 group-hover:w-full"></span>
+            </Link>
+            <Link href="/game" className="text-gray-300 hover:text-cyan-400 transition-colors duration-300 relative group">
+              Games
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-pink-500 transition-all duration-300 group-hover:w-full"></span>
             </Link>
 
@@ -152,4 +156,6 @@ export default function Header() {
       </AnimatePresence>
     </header>
   )
-}
+})
+
+export default Header

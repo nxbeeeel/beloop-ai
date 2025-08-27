@@ -16,7 +16,23 @@ import {
 import Link from 'next/link'
 import Header from './components/Header'
 import InteractiveElements from './components/InteractiveElements'
-import LazyLoad, { LazyTestimonials, LazyPricing, LazyFooter } from './components/LazyLoad'
+import dynamic from 'next/dynamic'
+
+// Dynamically import heavy components
+const LazyTestimonials = dynamic(() => import('./components/Testimonials'), {
+  loading: () => <div className="h-96 bg-gray-900/50 rounded-xl animate-pulse" />,
+  ssr: false
+})
+
+const LazyPricing = dynamic(() => import('./components/Pricing'), {
+  loading: () => <div className="h-96 bg-gray-900/50 rounded-xl animate-pulse" />,
+  ssr: false
+})
+
+const LazyFooter = dynamic(() => import('./components/Footer'), {
+  loading: () => <div className="h-32 bg-gray-900/50 animate-pulse" />,
+  ssr: false
+})
 
 export default function Home() {
   return (
@@ -25,7 +41,7 @@ export default function Home() {
       <div className="fixed inset-0 bg-grid opacity-20"></div>
       <div className="fixed inset-0 bg-noise"></div>
       
-      {/* Interactive Elements (Client-only) */}
+      {/* Interactive Elements (Client-only) - Lazy loaded */}
       <InteractiveElements />
 
       <Header />
@@ -452,15 +468,9 @@ export default function Home() {
 
 
       
-        <LazyLoad>
-          <LazyPricing />
-        </LazyLoad>
-        <LazyLoad>
-          <LazyTestimonials />
-        </LazyLoad>
-        <LazyLoad>
-          <LazyFooter />
-        </LazyLoad>
+        <LazyPricing />
+        <LazyTestimonials />
+        <LazyFooter />
     </main>
   )
 }

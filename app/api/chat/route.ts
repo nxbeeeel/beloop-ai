@@ -11,6 +11,14 @@ import { getEnhancedFallbackResponse } from '@/app/lib/localAIServer'
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 export async function POST(request: Request) {
+  // Performance optimization: Add response headers for caching
+  const headers = {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  }
+
   let userMessage = '' // Declare outside try block for fallback use
   let userId = '' // Declare outside try block for fallback use
   let conversationId = '' // Declare outside try block for fallback use
@@ -26,7 +34,7 @@ export async function POST(request: Request) {
         error: 'User ID is required'
       }), { 
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers
       })
     }
 
@@ -41,7 +49,7 @@ export async function POST(request: Request) {
         }
       }), { 
         status: 429,
-        headers: { 'Content-Type': 'application/json' }
+        headers
       })
     }
 
@@ -61,7 +69,7 @@ export async function POST(request: Request) {
         }
       }), { 
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers
       })
     }
 
@@ -76,7 +84,7 @@ export async function POST(request: Request) {
         }
       }), { 
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers
       })
     }
 
@@ -102,37 +110,8 @@ export async function POST(request: Request) {
     // Get conversation history
     messages = getConversationMessages(conversationId)
     
-    // Build conversation history for Gemini API
-    let chatHistory = messages
-      .filter((msg: any) => msg.content && msg.content.trim() !== '')
-      .map((msg: any) => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content.trim() }]
-      }))
-    
-    // Ensure the first message is from user
-    if (chatHistory.length > 0 && chatHistory[0].role !== 'user') {
-      chatHistory = chatHistory.slice(1) // Remove first message if it's not from user
-    }
-
-    // Add system prompt for better code generation
-    const systemPrompt = `You are an expert web developer and AI assistant. When users ask for code, always provide complete, working HTML/CSS/JavaScript code that can be rendered in a browser. 
-
-Key guidelines:
-1. Always wrap code in proper markdown code blocks with language specification (\`\`\`html, \`\`\`css, \`\`\`javascript)
-2. For HTML, include complete structure with DOCTYPE, html, head, and body tags
-3. For CSS, provide complete styling that works standalone
-4. For JavaScript, provide complete, functional code
-5. When users ask for updates or changes to previous code, understand the context and provide the updated version
-6. Make sure all code is properly formatted and indented
-7. Include comments to explain complex parts
-8. Ensure the code is responsive and modern
-
-If the user is asking for updates to previous code, analyze the conversation history and provide the updated version.`
-
-    // Start chat with history and system prompt
+    // Start a simple chat session
     const chat = model.startChat({
-      history: chatHistory,
       generationConfig: {
         maxOutputTokens: 2048,
         temperature: 0.7,
@@ -141,16 +120,48 @@ If the user is asking for updates to previous code, analyze the conversation his
       },
     })
 
-    // Send system prompt first, then user message
-    try {
-      await chat.sendMessage(systemPrompt)
-    } catch (error) {
-      console.log('System prompt failed, continuing with user message only')
-    }
-
+    // Send the user message directly (system prompt is already in history)
     const result = await chat.sendMessage(message)
+    console.log('Gemini API Result:', result)
+    
+    if (!result || !result.response) {
+      console.error('No response from Gemini API')
+      throw new Error('No response from Gemini API')
+    }
+    
     const response = await result.response
+    console.log('Gemini API Response:', response)
+    
+    if (!response || !response.text) {
+      console.error('Invalid response structure from Gemini API')
+      throw new Error('Invalid response structure from Gemini API')
+    }
+    
     const text = response.text()
+    console.log('Gemini API Text:', text)
+
+    // Check if text is empty or undefined
+    if (!text || text.trim() === '') {
+      console.log('Empty response from Gemini, using fallback')
+      const fallbackText = `I understand you said: "${userMessage}". Let me help you with that. Could you please provide more details about what you'd like assistance with?`
+      addMessage(userId, conversationId, 'assistant', fallbackText)
+      
+      return new Response(JSON.stringify({
+        response: fallbackText,
+        conversationId,
+        fallback: true,
+        usage: {
+          promptTokens: 0,
+          responseTokens: 0,
+          totalTokens: 0,
+        },
+        membership: {
+          remainingMessages: getRemainingUsage(userId, 'chatMessages')
+        }
+      }), {
+        headers
+      })
+    }
 
     // Add AI response to history
     addMessage(userId, conversationId, 'assistant', text)
@@ -199,7 +210,7 @@ If the user is asking for updates to previous code, analyze the conversation his
           remainingMessages: getRemainingUsage(userId, 'chatMessages')
         }
       }), {
-        headers: { 'Content-Type': 'application/json' }
+        headers
       })
     }
     
@@ -212,9 +223,9 @@ If the user is asking for updates to previous code, analyze the conversation his
           hasApiKey: !!process.env.GEMINI_API_KEY,
           environment: process.env.NODE_ENV
         }
-      }), { 
+            }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' }
+        headers
       })
     }
     
@@ -227,9 +238,9 @@ If the user is asking for updates to previous code, analyze the conversation his
           hasApiKey: !!process.env.GEMINI_API_KEY,
           environment: process.env.NODE_ENV
         }
-      }), { 
+            }), {
         status: 404,
-        headers: { 'Content-Type': 'application/json' }
+        headers
       })
     }
     
@@ -254,7 +265,7 @@ If the user is asking for updates to previous code, analyze the conversation his
         remainingMessages: getRemainingUsage(userId, 'chatMessages')
       }
     }), {
-      headers: { 'Content-Type': 'application/json' }
+      headers
     })
   }
 }

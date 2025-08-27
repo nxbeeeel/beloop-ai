@@ -1,15 +1,17 @@
-'use client'e
+'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, Bot, User, Clock, Copy, Check, Plus, Gamepad2, X, Star } from 'lucide-react'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { Send, Loader2, Bot, User, Clock, Copy, Check, Plus, Gamepad2, X, Sparkles, Code, Brain, Zap, MessageSquare, Settings, Trash2, Download, Upload, Mic, MicOff, Volume2, VolumeX } from 'lucide-react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { motion, AnimatePresence } from 'framer-motion'
 
-// Game Components
+// Game Components (imported from chat page)
 const NumberGuessGame = () => {
   const [guess, setGuess] = useState('')
   const [message, setMessage] = useState('')
   const [attempts, setAttempts] = useState(0)
-  const [targetNumber] = useState(50) // Fixed for hydration
+  const [targetNumber] = useState(() => Math.floor(Math.random() * 100) + 1)
 
   const handleGuess = () => {
     const numGuess = parseInt(guess)
@@ -25,9 +27,23 @@ const NumberGuessGame = () => {
     setGuess('')
   }
 
+  const resetGame = () => {
+    setGuess('')
+    setMessage('')
+    setAttempts(0)
+  }
+
   return (
     <div className="p-6 bg-gray-900/50 rounded-xl border border-gray-700/50">
-      <h3 className="text-xl font-bold text-white mb-4">🎯 Number Guessing Game</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold text-white">🎯 Number Guessing Game</h3>
+        <button
+          onClick={resetGame}
+          className="px-3 py-1 bg-gray-700 text-white rounded-lg hover:bg-gray-600 text-sm"
+        >
+          Reset
+        </button>
+      </div>
       <p className="text-gray-400 mb-4">Guess the number between 1 and 100!</p>
       <div className="space-y-4">
         <input
@@ -39,75 +55,14 @@ const NumberGuessGame = () => {
         />
         <button
           onClick={handleGuess}
-          className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
+          disabled={!guess}
+          className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Submit Guess
         </button>
         {message && <p className="text-center text-cyan-400">{message}</p>}
         <p className="text-sm text-gray-500">Attempts: {attempts}</p>
       </div>
-    </div>
-  )
-}
-
-const MemoryGame = () => {
-  const [cards, setCards] = useState<number[]>([])
-  const [flipped, setFlipped] = useState<number[]>([])
-  const [matched, setMatched] = useState<number[]>([])
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-    // Create pairs of numbers for memory game
-    const numbers = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
-    if (typeof window !== 'undefined') {
-      // Shuffle only on client
-      for (let i = numbers.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        ;[numbers[i], numbers[j]] = [numbers[j], numbers[i]]
-      }
-    }
-    setCards(numbers)
-  }, [])
-
-  const handleCardClick = (index: number) => {
-    if (flipped.length === 2 || flipped.includes(index) || matched.includes(index)) return
-    
-    const newFlipped = [...flipped, index]
-    setFlipped(newFlipped)
-    
-    if (newFlipped.length === 2) {
-      const [first, second] = newFlipped
-      if (cards[first] === cards[second]) {
-        setMatched(prev => [...prev, first, second])
-        setFlipped([])
-      } else {
-        setTimeout(() => setFlipped([]), 1000)
-      }
-    }
-  }
-
-  if (!isClient) return <div className="p-6 bg-gray-900/50 rounded-xl">Loading...</div>
-
-  return (
-    <div className="p-6 bg-gray-900/50 rounded-xl border border-gray-700/50">
-      <h3 className="text-xl font-bold text-white mb-4">🧠 Memory Game</h3>
-      <div className="grid grid-cols-4 gap-2 mb-4">
-        {cards.map((card, index) => (
-          <button
-            key={index}
-            onClick={() => handleCardClick(index)}
-            className={`w-12 h-12 rounded-lg border-2 transition-all ${
-              flipped.includes(index) || matched.includes(index)
-                ? 'bg-cyan-500 border-cyan-400 text-white'
-                : 'bg-gray-700 border-gray-600 text-transparent'
-            }`}
-          >
-            {flipped.includes(index) || matched.includes(index) ? card : '?'}
-          </button>
-        ))}
-      </div>
-      <p className="text-sm text-gray-400">Matched: {matched.length / 2}/6</p>
     </div>
   )
 }
@@ -151,9 +106,17 @@ const TicTacToe = () => {
 
   return (
     <div className="p-6 bg-gray-900/50 rounded-xl border border-gray-700/50">
-      <h3 className="text-xl font-bold text-white mb-4">⭕ Tic Tac Toe</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold text-white">⭕ Tic Tac Toe</h3>
+        <button
+          onClick={resetGame}
+          className="px-3 py-1 bg-gray-700 text-white rounded-lg hover:bg-gray-600 text-sm"
+        >
+          Reset
+        </button>
+      </div>
       <div className="mb-4">
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-3 gap-2 mb-4 max-w-48 mx-auto">
           {board.map((square, i) => (
             <button
               key={i}
@@ -165,12 +128,6 @@ const TicTacToe = () => {
           ))}
         </div>
         <p className="text-center text-cyan-400 mb-4">{status}</p>
-        <button
-          onClick={resetGame}
-          className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
-        >
-          Reset Game
-        </button>
       </div>
     </div>
   )
@@ -183,6 +140,7 @@ const RockPaperScissors = () => {
   const [score, setScore] = useState({ player: 0, computer: 0 })
 
   const choices = ['rock', 'paper', 'scissors']
+  const emojis = { rock: '🪨', paper: '📄', scissors: '✂️' }
 
   const playGame = (choice: string) => {
     const computer = choices[Math.floor(Math.random() * 3)]
@@ -204,25 +162,45 @@ const RockPaperScissors = () => {
     }
   }
 
+  const resetGame = () => {
+    setScore({ player: 0, computer: 0 })
+    setPlayerChoice('')
+    setComputerChoice('')
+    setResult('')
+  }
+
   return (
     <div className="p-6 bg-gray-900/50 rounded-xl border border-gray-700/50">
-      <h3 className="text-xl font-bold text-white mb-4">✂️ Rock Paper Scissors</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold text-white">✂️ Rock Paper Scissors</h3>
+        <button
+          onClick={resetGame}
+          className="px-3 py-1 bg-gray-700 text-white rounded-lg hover:bg-gray-600 text-sm"
+        >
+          Reset Score
+        </button>
+      </div>
       <div className="space-y-4">
         <div className="flex justify-center space-x-4">
           {choices.map(choice => (
             <button
               key={choice}
               onClick={() => playGame(choice)}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 capitalize"
+              className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 capitalize flex items-center gap-2"
             >
+              <span>{emojis[choice as keyof typeof emojis]}</span>
               {choice}
             </button>
           ))}
         </div>
         {playerChoice && (
           <div className="text-center space-y-2">
-            <p className="text-gray-400">You chose: <span className="text-white capitalize">{playerChoice}</span></p>
-            <p className="text-gray-400">Computer chose: <span className="text-white capitalize">{computerChoice}</span></p>
+            <p className="text-gray-400">
+              You chose: <span className="text-white capitalize">{emojis[playerChoice as keyof typeof emojis]} {playerChoice}</span>
+            </p>
+            <p className="text-gray-400">
+              Computer chose: <span className="text-white capitalize">{emojis[computerChoice as keyof typeof emojis]} {computerChoice}</span>
+            </p>
             <p className="text-xl font-bold text-cyan-400">{result}</p>
           </div>
         )}
@@ -235,46 +213,28 @@ const RockPaperScissors = () => {
 }
 
 export default function ChatPage() {
+  const { data: session, status } = useSession()
+  
+  // Debug session info
+  useEffect(() => {
+    if (session) {
+      console.log('Session data:', session)
+    }
+  }, [session])
+  
   const [messages, setMessages] = useState<any[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showGameLauncher, setShowGameLauncher] = useState(false)
   const [activeGame, setActiveGame] = useState<string | null>(null)
+  const [isTyping, setIsTyping] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-
-  // Simple authentication check
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/session')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.user) {
-            setIsAuthenticated(true)
-            // Set initial message
-            setMessages([
-              {
-                id: '1',
-                role: 'assistant',
-                content: `Hello ${data.user.name || 'there'}! I'm your AI assistant. How can I help you today?`,
-                timestamp: new Date()
-              }
-            ])
-          }
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error)
-      } finally {
-        setIsCheckingAuth(false)
-      }
-    }
-
-    checkAuth()
-  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -284,7 +244,14 @@ export default function ChatPage() {
     scrollToBottom()
   }, [messages])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (status === 'loading') return
+    if (!session) {
+      window.location.href = '/login'
+    }
+  }, [session, status])
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
 
@@ -298,24 +265,36 @@ export default function ChatPage() {
     setMessages(prev => [...prev, userMessage])
     setInputValue('')
     setIsLoading(true)
+    setIsTyping(true)
 
     try {
+      console.log('Sending chat request:', {
+        message: inputValue,
+        userId: session?.user?.email || session?.user?.id || 'anonymous'
+      })
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: inputValue
+          message: inputValue,
+          userId: session?.user?.email || session?.user?.id || 'anonymous'
         }),
       })
 
       if (response.ok) {
         const data = await response.json()
+        console.log('Chat API Response:', data) // Debug log
+        
+        // Check if we have a valid response
+        const responseText = data.response || data.message || 'Sorry, I couldn\'t process your request.'
+        console.log('Response text:', responseText)
+        
         const assistantMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: data.message,
+          content: responseText,
           timestamp: new Date()
         }
         setMessages(prev => [...prev, assistantMessage])
@@ -333,16 +312,17 @@ export default function ChatPage() {
       setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
+      setIsTyping(false)
     }
-  }
+  }, [inputValue, isLoading, session?.user?.id])
 
-  const handleCopy = (text: string, messageId: string) => {
+  const handleCopy = useCallback((text: string, messageId: string) => {
     navigator.clipboard.writeText(text)
     setCopiedMessageId(messageId)
     setTimeout(() => setCopiedMessageId(null), 2000)
-  }
+  }, [])
 
-  const startNewChat = () => {
+  const startNewChat = useCallback(() => {
     setMessages([
       {
         id: '1',
@@ -351,21 +331,30 @@ export default function ChatPage() {
         timestamp: new Date()
       }
     ])
-  }
+  }, [])
 
-  const games = [
+  const games = useMemo(() => [
     { key: 'number', name: 'Number Guessing', component: NumberGuessGame, emoji: '🎯' },
-    { key: 'memory', name: 'Memory Game', component: MemoryGame, emoji: '🧠' },
     { key: 'tictactoe', name: 'Tic Tac Toe', component: TicTacToe, emoji: '⭕' },
     { key: 'rps', name: 'Rock Paper Scissors', component: RockPaperScissors, emoji: '✂️' }
-  ]
+  ], [])
 
   const GameModal = () => {
     if (!showGameLauncher) return null
 
     return (
-      <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-        <div className="bg-gray-900 rounded-2xl border border-gray-700 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-gray-900 rounded-2xl border border-gray-700 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        >
           <div className="p-6 border-b border-gray-700">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -400,55 +389,53 @@ export default function ChatPage() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {games.map((game) => (
-                  <div
+                  <motion.div
                     key={game.key}
-                    className="p-6 bg-gray-800/50 rounded-xl border border-gray-700/50 hover:border-cyan-400/30 transition-all duration-300 cursor-pointer group"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setActiveGame(game.key)}
+                    className="p-6 bg-gray-800/50 rounded-xl border border-gray-700/50 hover:bg-gray-700/50 cursor-pointer transition-all duration-300 hover:border-cyan-500/50"
                   >
-                    <div className="text-4xl mb-4">{game.emoji}</div>
-                    <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-400 transition-colors">
-                      {game.name}
-                    </h3>
-                    <p className="text-gray-400 text-sm">Click to play!</p>
-                  </div>
+                    <div className="text-center">
+                      <div className="text-4xl mb-4">{game.emoji}</div>
+                      <h3 className="text-lg font-bold text-white mb-2">{game.name}</h3>
+                      <div className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg border border-cyan-500/30 inline-block text-sm">
+                        Click to Play
+                      </div>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             )}
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     )
   }
 
-  // Show loading while checking authentication
-  if (isCheckingAuth) {
+  if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
+          <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-400">Loading...</p>
         </div>
       </div>
     )
   }
 
-  // Don't render if not authenticated
-  if (!isAuthenticated) {
+  if (!session) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <User className="w-8 h-8 text-red-400" />
-          </div>
-          <h2 className="text-xl font-bold text-white mb-2">Authentication Required</h2>
-          <p className="text-gray-400 mb-4">Please sign in to access the chat.</p>
+          <h1 className="text-2xl font-bold text-white mb-4">Please log in to access chat</h1>
           <Link
             href="/login"
-            className="inline-block px-6 py-3 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors"
+            className="px-6 py-3 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors"
           >
-            Sign In
+            Go to Login
           </Link>
         </div>
       </div>
@@ -456,133 +443,304 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Header */}
-      <div className="bg-gray-900/50 border-b border-gray-700/50 p-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-2xl font-bold text-cyan-400">
-              Beloop AI
-            </Link>
-            <button
-              onClick={startNewChat}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              New Chat
-            </button>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowGameLauncher(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-pink-500 text-white rounded-lg hover:shadow-lg hover:shadow-cyan-400/25 transition-all duration-300"
-            >
-              <Gamepad2 className="w-4 h-4" />
-              Games
-            </button>
-            <Link
-              href="/account"
-              className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Account
-            </Link>
+      <header className="border-b border-gray-700/50 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="text-2xl font-bold text-white hover:text-cyan-400 transition-colors">
+                Beloop AI
+              </Link>
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-cyan-400" />
+                <span className="text-cyan-400 font-medium">Chat Assistant</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+              
+              <Link
+                href="/game"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                <Gamepad2 className="w-4 h-4" />
+                Games
+              </Link>
+              
+              <Link
+                href="/"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                <Sparkles className="w-4 h-4" />
+                Home
+              </Link>
+
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-800 rounded-lg">
+                <User className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-300">{session.user?.name}</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Chat Container */}
-      <div className="max-w-4xl mx-auto p-4">
-        {/* Messages */}
-        <div className="space-y-6 mb-6">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+      {/* Main Chat Container */}
+      <div className="flex h-[calc(100vh-80px)]">
+        {/* Sidebar */}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.aside
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              className="w-80 bg-gray-900/50 border-r border-gray-700/50 p-4"
             >
-              {message.role === 'assistant' && (
-                <div className="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
-              )}
-              
-              <div
-                className={`max-w-[80%] p-4 rounded-2xl ${
-                  message.role === 'user'
-                    ? 'bg-cyan-500 text-white'
-                    : 'bg-gray-800 text-white'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-white">Chat History</h3>
                   <button
-                    onClick={() => handleCopy(message.content, message.id)}
-                    className="text-gray-400 hover:text-white transition-colors flex-shrink-0"
+                    onClick={startNewChat}
+                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
                   >
-                    {copiedMessageId === message.id ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
+                    <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
-                  <Clock className="w-3 h-3" />
-                  {message.timestamp.toLocaleTimeString()}
+                
+                <div className="space-y-2">
+                  <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700/50">
+                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                      <MessageSquare className="w-4 h-4" />
+                      Current Chat
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {messages.length} messages
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-gray-700/50">
+                  <h4 className="text-sm font-medium text-gray-400 mb-3">Quick Actions</h4>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => setShowGameLauncher(true)}
+                      className="w-full flex items-center gap-3 p-3 text-left text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors"
+                    >
+                      <Gamepad2 className="w-4 h-4" />
+                      Play Games
+                    </button>
+                    <button
+                      onClick={() => setIsMuted(!isMuted)}
+                      className="w-full flex items-center gap-3 p-3 text-left text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors"
+                    >
+                      {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                      {isMuted ? 'Unmute' : 'Mute'}
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              {message.role === 'user' && (
-                <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-              )}
-            </div>
-          ))}
-          
-          {isLoading && (
-            <div className="flex gap-4 justify-start">
-              <div className="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <Bot className="w-4 h-4 text-white" />
-              </div>
-              <div className="bg-gray-800 p-4 rounded-2xl">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
-                  <span className="text-gray-400">AI is thinking...</span>
-                </div>
-              </div>
-            </div>
+            </motion.aside>
           )}
-        </div>
+        </AnimatePresence>
 
-        <div ref={messagesEndRef} />
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Messages Container */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            {messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center max-w-md">
+                  <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Brain className="w-10 h-10 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-4">Welcome to Beloop AI Chat</h2>
+                  <p className="text-gray-400 mb-6">
+                    I'm your AI assistant. Ask me anything about coding, technology, or general questions!
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button
+                      onClick={() => setInputValue("Can you help me with React development?")}
+                      className="p-4 bg-gray-800/50 rounded-lg border border-gray-700/50 hover:bg-gray-700/50 transition-colors text-left"
+                    >
+                      <Code className="w-5 h-5 text-cyan-400 mb-2" />
+                      <h3 className="font-semibold text-white mb-1">React Help</h3>
+                      <p className="text-sm text-gray-400">Get help with React development</p>
+                    </button>
+                    <button
+                      onClick={() => setInputValue("What's the latest in AI technology?")}
+                      className="p-4 bg-gray-800/50 rounded-lg border border-gray-700/50 hover:bg-gray-700/50 transition-colors text-left"
+                    >
+                      <Brain className="w-5 h-5 text-pink-400 mb-2" />
+                      <h3 className="font-semibold text-white mb-1">AI Technology</h3>
+                      <p className="text-sm text-gray-400">Learn about latest AI trends</p>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`flex gap-4 max-w-4xl ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    {/* Avatar */}
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      message.role === 'user' 
+                        ? 'bg-gradient-to-r from-cyan-400 to-pink-400' 
+                        : 'bg-gradient-to-r from-purple-400 to-blue-400'
+                    }`}>
+                      {message.role === 'user' ? (
+                        <User className="w-4 h-4 text-white" />
+                      ) : (
+                        <Bot className="w-4 h-4 text-white" />
+                      )}
+                    </div>
 
-        {/* Input Form */}
-        <form onSubmit={handleSubmit} className="sticky bottom-4">
-          <div className="flex gap-4 p-4 bg-gray-900/50 rounded-2xl border border-gray-700/50">
-            <textarea
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 bg-transparent text-white placeholder-gray-400 resize-none outline-none"
-              rows={1}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSubmit(e)
-                }
-              }}
-            />
-            <button
-              type="submit"
-              disabled={!inputValue.trim() || isLoading}
-              className="px-6 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+                    {/* Message Content */}
+                    <div className={`flex-1 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                      <div className={`inline-block p-4 rounded-2xl max-w-2xl ${
+                        message.role === 'user'
+                          ? 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white'
+                          : 'bg-gray-800/50 border border-gray-700/50 text-gray-100'
+                      }`}>
+                        <div className="prose prose-invert max-w-none">
+                          <div className="whitespace-pre-wrap">{message.content}</div>
+                        </div>
+                      </div>
+                      
+                      {/* Message Actions */}
+                      <div className={`flex items-center gap-2 mt-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <span className="text-xs text-gray-500">
+                          {message.timestamp.toLocaleTimeString()}
+                        </span>
+                        {message.role === 'assistant' && (
+                          <button
+                            onClick={() => handleCopy(message.content, message.id)}
+                            className="p-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors"
+                          >
+                            {copiedMessageId === message.id ? (
+                              <Check className="w-3 h-3" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
+            
+            {/* Typing Indicator */}
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex gap-4 justify-start"
+              >
+                <div className="flex gap-4 max-w-4xl">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="inline-block p-4 rounded-2xl bg-gray-800/50 border border-gray-700/50">
+                      <div className="flex items-center gap-2">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                        <span className="text-gray-400 text-sm">AI is thinking...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            
+            <div ref={messagesEndRef} />
           </div>
-        </form>
+
+          {/* Input Area */}
+          <div className="border-t border-gray-700/50 bg-gray-900/50 backdrop-blur-sm p-4">
+            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+              <div className="flex items-end gap-4">
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={inputRef}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Type your message here..."
+                    className="w-full p-4 pr-12 bg-gray-800 border border-gray-700 rounded-2xl text-white placeholder-gray-400 resize-none focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
+                    rows={1}
+                    style={{ minHeight: '60px', maxHeight: '200px' }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSubmit(e)
+                      }
+                    }}
+                  />
+                  
+                  {/* Input Actions */}
+                  <div className="absolute right-3 bottom-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsRecording(!isRecording)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        isRecording 
+                          ? 'bg-red-500 text-white' 
+                          : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                      }`}
+                    >
+                      {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    </button>
+                    
+                    <button
+                      type="submit"
+                      disabled={!inputValue.trim() || isLoading}
+                      className="p-2 bg-gradient-to-r from-cyan-500 to-pink-500 text-white rounded-lg hover:from-cyan-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Quick Actions */}
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <span>Press Enter to send, Shift+Enter for new line</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowGameLauncher(true)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Gamepad2 className="w-4 h-4" />
+                    Games
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
 
       {/* Game Modal */}

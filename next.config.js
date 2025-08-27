@@ -1,21 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    domains: ['images.unsplash.com', 'lh3.googleusercontent.com'],
-    formats: ['image/webp', 'image/avif'],
-  },
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
-  compress: true,
-  poweredByHeader: false,
-  generateEtags: false,
-  reactStrictMode: true,
   // Performance optimizations
   experimental: {
-    optimizeCss: false,
     optimizePackageImports: ['lucide-react', 'framer-motion'],
+    optimizeCss: true,
   },
+  
   // Turbopack configuration
   turbopack: {
     rules: {
@@ -25,16 +15,79 @@ const nextConfig = {
       },
     },
   },
-  // Fix for NextAuth static generation
+  
+  // Image optimization
+  images: {
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
+  },
+  
+  // Compression
+  compress: true,
+  
+  // Bundle analyzer (optional - uncomment to analyze bundle)
+  // webpack: (config, { isServer }) => {
+  //   if (!isServer) {
+  //     config.resolve.fallback = {
+  //       ...config.resolve.fallback,
+  //       fs: false,
+  //     };
+  //   }
+  //   return config;
+  // },
+  
+  // Headers for caching
   async headers() {
     return [
       {
-        source: '/api/auth/:path*',
+        source: '/(.*)',
         headers: [
-          { key: 'Cache-Control', value: 'no-store' },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
         ],
       },
-    ]
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+      {
+        source: '/:path*.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
+  
+  // Redirects for performance
+  async redirects() {
+    return [
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+    ];
   },
 }
 

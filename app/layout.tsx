@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import SessionProvider from './components/SessionProvider'
-import PerformanceMonitor from './components/PerformanceMonitor'
 import { Analytics } from '@vercel/analytics/next'
 
 // Optimize font loading
@@ -64,7 +63,6 @@ export default function RootLayout({
         <SessionProvider>
           {children}
         </SessionProvider>
-        <PerformanceMonitor />
         <Analytics />
       </body>
     </html>

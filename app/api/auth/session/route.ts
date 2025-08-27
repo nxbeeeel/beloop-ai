@@ -1,17 +1,10 @@
-import NextAuth, { DefaultSession } from 'next-auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import NextAuth from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { findUserByEmail } from '@/app/lib/users'
-
-// Extend the built-in session types
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-    } & DefaultSession["user"]
-  }
-}
 
 const authOptions = {
   providers: [
@@ -75,6 +68,29 @@ const authOptions = {
   },
 }
 
-const handler = NextAuth(authOptions)
+export async function GET(request: NextRequest) {
+  try {
+    // Get the session using NextAuth's getServerSession
+    const session = await getServerSession(authOptions)
+    
+    if (!session) {
+      return NextResponse.json({ user: null }, { status: 200 })
+    }
 
-export { handler as GET, handler as POST }
+    return NextResponse.json({
+      user: {
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image
+      }
+    }, { status: 200 })
+
+  } catch (error) {
+    console.error('Session endpoint error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error', user: null },
+      { status: 500 }
+    )
+  }
+}
