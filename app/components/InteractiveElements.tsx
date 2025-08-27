@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 
 interface Particle {
   id: number
@@ -10,7 +10,7 @@ interface Particle {
   duration: number
 }
 
-export default function InteractiveElements() {
+const InteractiveElements = memo(function InteractiveElements() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [particles, setParticles] = useState<Particle[]>([])
   const [isClient, setIsClient] = useState(false)
@@ -71,4 +71,6 @@ export default function InteractiveElements() {
       />
     </>
   )
-}
+})
+
+export default InteractiveElements
