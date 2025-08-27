@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User, LogIn, UserPlus, MessageSquare, LogOut, Sparkles, Crown, Zap, Star, Diamond } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 
 interface AuthSectionProps {
@@ -96,10 +97,12 @@ export default function AuthSection({ isMobile = false, onMenuClose }: AuthSecti
           <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-800/50">
             <div className="relative">
               {session.user?.image ? (
-                <img 
-                  src={session.user.image} 
-                  alt={session.user.name || 'User'} 
-                  className="w-10 h-10 rounded-full"
+                <Image 
+                  src={session.user.image}
+                  alt={session.user.name || 'User'}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
                 />
               ) : (
                 <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
@@ -169,10 +172,12 @@ export default function AuthSection({ isMobile = false, onMenuClose }: AuthSecti
         >
           <div className="relative">
             {session.user?.image ? (
-              <img 
-                src={session.user.image} 
-                alt={session.user.name || 'User'} 
-                className="w-8 h-8 rounded-full"
+              <Image 
+                src={session.user.image}
+                alt={session.user.name || 'User'}
+                width={32}
+                height={32}
+                className="rounded-full"
               />
             ) : (
               <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">

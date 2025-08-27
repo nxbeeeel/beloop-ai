@@ -15,8 +15,10 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import Header from './components/Header'
-import InteractiveElements from './components/InteractiveElements'
 import dynamic from 'next/dynamic'
+
+// Lazy-load InteractiveElements to reduce initial bundle
+const InteractiveElements = dynamic(() => import('./components/InteractiveElements'), { ssr: false })
 
 // Dynamically import heavy components
 const LazyTestimonials = dynamic(() => import('./components/Testimonials'), {
