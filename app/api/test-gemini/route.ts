@@ -5,9 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 export async function GET() {
   try {
     console.log('Testing Gemini API...')
-    console.log('API Key exists:', !!process.env.GEMINI_API_KEY)
-    console.log('API Key length:', process.env.GEMINI_API_KEY?.length || 0)
-    
+
     if (!process.env.GEMINI_API_KEY) {
       return new Response(JSON.stringify({ 
         error: 'No API key found',
@@ -30,11 +28,10 @@ export async function GET() {
     const text = response.text()
     console.log('Test text:', text)
     
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       success: true,
       response: text,
-      hasApiKey: true,
-      apiKeyLength: process.env.GEMINI_API_KEY?.length || 0
+      hasApiKey: true
     }), { 
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -42,10 +39,9 @@ export async function GET() {
     
   } catch (error: any) {
     console.error('Gemini API Test Error:', error)
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: error.message,
-      hasApiKey: !!process.env.GEMINI_API_KEY,
-      apiKeyLength: process.env.GEMINI_API_KEY?.length || 0
+      hasApiKey: !!process.env.GEMINI_API_KEY
     }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }

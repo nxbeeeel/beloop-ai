@@ -12,22 +12,22 @@ export interface User {
 export let users: User[] = [
   {
     id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
+    name: 'Demo User',
+    email: 'user1@example.com',
     password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
     image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
   },
   {
     id: '2',
-    name: 'Beloop Store',
-    email: 'admin@example.com',
+    name: 'Demo Store',
+    email: 'user2@example.com',
     password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
   },
   {
     id: '3',
-    name: 'Mohammed Nabeel',
-    email: 'user@example.com',
+    name: 'Demo Admin',
+    email: 'admin@example.com',
     password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
     image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face'
   }

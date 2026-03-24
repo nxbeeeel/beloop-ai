@@ -53,11 +53,6 @@ export async function POST(request: Request) {
       })
     }
 
-    // Debug information
-    console.log('API Key exists:', !!process.env.GEMINI_API_KEY)
-    console.log('API Key length:', process.env.GEMINI_API_KEY?.length || 0)
-    console.log('Environment:', process.env.NODE_ENV)
-
     if (!process.env.GEMINI_API_KEY) {
       console.error('GEMINI_API_KEY is not set in environment variables')
       return new Response(JSON.stringify({ 

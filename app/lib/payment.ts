@@ -38,8 +38,8 @@ export let paymentMethods: PaymentMethod[] = []
 // Initialize premium subscriptions for multiple users
 const initializePremiumSubscriptions = () => {
   const premiumUsers = [
-    'admin@example.com',
-    'user@example.com'
+    'user2@example.com',
+    'admin@example.com'
   ]
 
   premiumUsers.forEach(premiumUserId => {
