@@ -13,14 +13,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Log configuration for debugging
-    console.log('Gmail Configuration:', {
-      hasUser: !!process.env.GMAIL_USER,
-      hasPassword: !!process.env.GMAIL_APP_PASSWORD,
-      userLength: process.env.GMAIL_USER?.length,
-      passwordLength: process.env.GMAIL_APP_PASSWORD?.length
-    })
-
     // Create transporter for Gmail
     const transporter = nodemailer.createTransport({
       service: 'gmail',

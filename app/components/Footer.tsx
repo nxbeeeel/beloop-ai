@@ -173,7 +173,7 @@ export default function Footer() {
                     </motion.a>
                     
                     <motion.a
-                      href="mailto:admin@example.com"
+                      href="mailto:hello@beloop.ai"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       className="group flex items-center space-x-3 bg-gray-800 hover:bg-gray-700 text-white px-8 py-4 rounded-xl transition-all duration-300 cursor-pointer border border-gray-700 hover:border-gray-600 font-medium"

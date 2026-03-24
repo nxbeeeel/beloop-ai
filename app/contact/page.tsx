@@ -69,8 +69,8 @@ export default function ContactPage() {
       icon: Mail,
       title: 'Email Us',
       description: 'Get in touch via email',
-      value: 'admin@example.com',
-      link: 'mailto:admin@example.com'
+      value: 'hello@beloop.ai',
+      link: 'mailto:hello@beloop.ai'
     },
     {
       icon: Phone,
